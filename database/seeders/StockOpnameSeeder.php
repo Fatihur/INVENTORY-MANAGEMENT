@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\StockOpname;
 use App\Models\Warehouse;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -13,8 +14,9 @@ class StockOpnameSeeder extends Seeder
     {
         $warehouses = Warehouse::all();
         $user = User::first();
+        $products = Product::all();
 
-        if ($warehouses->isEmpty() || !$user) {
+        if ($warehouses->isEmpty() || !$user || $products->isEmpty()) {
             return;
         }
 
@@ -24,15 +26,15 @@ class StockOpnameSeeder extends Seeder
 
         for ($i = 1; $i <= 3; $i++) {
             $status = $statuses[$i - 1]; // Cycle through statuses
+            $product = $products->random();
             
             StockOpname::create([
-                'doc_number' => 'OPN-' . date('Y') . '-' . str_pad($i, 5, '0', STR_PAD_LEFT),
                 'warehouse_id' => $mainWh->id,
+                'product_id' => $product->id,
                 'status' => $status,
-                'type' => 'partial',
-                'scheduled_date' => now()->subDays(rand(1, 14)),
-                'start_time' => $status !== 'draft' ? now()->subDays(rand(1, 14)) : null,
-                'end_time' => $status === 'completed' ? now()->subDays(rand(1, 14))->addHours(2) : null,
+                'system_qty' => 100,
+                'actual_qty' => 98,
+                'completed_at' => $status === 'completed' ? now()->subDays(rand(1, 14))->addHours(2) : null,
                 'notes' => 'Seeded Stock Opname routine check',
                 'created_by' => $user->id,
             ]);

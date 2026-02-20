@@ -23,7 +23,7 @@ class SalesOrderSeeder extends Seeder
             return;
         }
 
-        $statuses = ['draft', 'pending', 'confirmed', 'processing', 'shipped', 'completed'];
+        $statuses = ['draft', 'confirmed', 'processing', 'shipped', 'completed'];
 
         for ($i = 1; $i <= 10; $i++) {
             $customer = $customers->random();
@@ -40,6 +40,7 @@ class SalesOrderSeeder extends Seeder
                 'created_by' => $user->id,
             ]);
 
+            $subtotal = 0;
             $orderProducts = $products->random(rand(1, 4));
             foreach ($orderProducts as $prod) {
                 $qty = rand(1, 20);
@@ -54,8 +55,14 @@ class SalesOrderSeeder extends Seeder
                     'subtotal' => $qty * $price,
                     'total' => ($qty * $price) * 1.11,
                 ]);
+                $subtotal += ($qty * $price);
             }
-            $so->calculateTotals();
+            
+            $so->update([
+                'subtotal' => $subtotal,
+                'tax_amount' => $subtotal * 0.11,
+                'total_amount' => $subtotal * 1.11,
+            ]);
         }
     }
 }

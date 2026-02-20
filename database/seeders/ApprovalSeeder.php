@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\ApprovalLevel;
+use Spatie\Permission\Models\Role;
 use Illuminate\Database\Seeder;
 
 class ApprovalSeeder extends Seeder
@@ -43,10 +44,18 @@ class ApprovalSeeder extends Seeder
         ];
 
         foreach ($levels as $level) {
-            ApprovalLevel::firstOrCreate([
-                'name' => $level['name'],
-                'model_type' => $level['model_type']
-            ], $level);
+            $role = Role::where('name', $level['role_name'])->first();
+
+            if ($role) {
+                ApprovalLevel::firstOrCreate([
+                    'name' => $level['name'],
+                    'model_type' => $level['model_type']
+                ], [
+                    'level_order' => $level['level_order'],
+                    'role_id' => $role->id,
+                    'is_active' => $level['is_active'],
+                ]);
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ class PurchaseOrderSeeder extends Seeder
             return;
         }
 
-        $statuses = ['draft', 'pending_approval', 'approved', 'processing', 'completed'];
+        $statuses = ['draft', 'sent', 'approved', 'partial', 'received', 'closed'];
 
         for ($i = 1; $i <= 5; $i++) {
             $supplier = $suppliers->random();
@@ -32,11 +32,12 @@ class PurchaseOrderSeeder extends Seeder
                 'supplier_id' => $supplier->id,
                 'status' => $status,
                 'order_date' => now()->subDays(rand(1, 45)),
-                'expected_date' => now()->addDays(rand(1, 14)),
+                'expected_delivery_date' => now()->addDays(rand(1, 14)),
                 'notes' => 'Seeded PO for ' . $supplier->name,
                 'created_by' => $user->id,
             ]);
 
+            $subtotal = 0;
             $orderProducts = $products->random(rand(2, 5));
             foreach ($orderProducts as $prod) {
                 $qty = rand(10, 100);
@@ -44,15 +45,20 @@ class PurchaseOrderSeeder extends Seeder
                 PurchaseOrderItem::create([
                     'purchase_order_id' => $po->id,
                     'product_id' => $prod->id,
-                    'quantity' => $qty,
+                    'qty_ordered' => $qty,
+                    'qty_received' => in_array($status, ['received', 'closed', 'partial']) ? rand(0, $qty) : 0,
                     'unit_price' => $price,
-                    'tax_rate' => 11,
-                    'discount_percent' => 0,
-                    'subtotal' => $qty * $price,
-                    'total' => ($qty * $price) * 1.11,
+                    'total_price' => $qty * $price,
+                    'notes' => 'Seeded PO item',
                 ]);
+                $subtotal += ($qty * $price);
             }
-            $po->calculateTotals();
+            
+            $po->update([
+                'subtotal' => $subtotal,
+                'tax_amount' => $subtotal * 0.11,
+                'total_amount' => $subtotal * 1.11,
+            ]);
         }
     }
 }

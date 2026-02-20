@@ -69,12 +69,11 @@ class StockSeeder extends Seeder
             $stock = Stock::firstOrCreate([
                 'product_id' => $product->id,
                 'warehouse_id' => $mainWh->id,
-                'bin_location_id' => $bin->id,
-                'batch_id' => $batchId,
             ], [
                 'qty_on_hand' => $qty,
-                'qty_allocated' => 0,
-                'qty_available' => $qty,
+                'qty_reserved' => 0,
+                'avg_cost' => $product->cost_price ?? 0,
+                'last_movement_at' => now(),
             ]);
 
             // Update Bin Capacity
@@ -82,14 +81,17 @@ class StockSeeder extends Seeder
 
             // Create Movement Log
             StockMovement::create([
-                'stock_id' => $stock->id,
+                'product_id' => $product->id,
+                'warehouse_id' => $mainWh->id,
                 'type' => 'in',
-                'quantity' => $qty,
-                'balance_after' => $qty,
-                'reference_type' => 'INITIAL_SYSTEM_SEED',
-                'reference_id' => 0,
+                'qty' => $qty,
+                'qty_before' => 0,
+                'qty_after' => $qty,
+                'reference_type' => 'App\Models\Warehouse',
+                'reference_id' => $mainWh->id,
                 'notes' => 'Seeding initial inventory data',
                 'created_by' => 1,
+                'moved_at' => now(),
             ]);
         }
     }
