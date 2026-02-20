@@ -22,11 +22,13 @@ class RestockRecommendationService implements RestockRecommendationServiceInterf
         return $products->map(function ($product) {
             $metrics = $this->calculateMetrics($product);
 
+            $primarySupplier = $product->suppliers->first(fn ($s) => $s->pivot->is_primary);
+
             return (object) [
                 'product' => $product,
                 'metrics' => $metrics,
                 'priority' => $this->calculatePriority($metrics),
-                'suggested_supplier' => $product->primarySupplier,
+                'suggested_supplier' => $primarySupplier,
             ];
         })->filter(fn ($rec) => $rec->metrics['needs_restock'])
             ->sortByDesc('priority');
@@ -67,7 +69,8 @@ class RestockRecommendationService implements RestockRecommendationServiceInterf
     public function getRecommendedOrderQuantity(Product $product): int
     {
         $metrics = $this->calculateMetrics($product);
-        $moq = $product->primarySupplier?->pivot?->moq ?? 1;
+        $primarySupplier = $product->suppliers->first(fn ($s) => $s->pivot->is_primary);
+        $moq = $primarySupplier?->pivot?->moq ?? 1;
 
         $recommendedQty = $metrics['recommended_order_qty'] ?? 0;
 

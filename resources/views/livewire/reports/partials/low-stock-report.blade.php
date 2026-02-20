@@ -44,7 +44,7 @@ $reportData = $this->getReportData();
                     </strong>
                 </td>
                 <td class="text-right"><span class="badge badge-danger">{{ $product->shortage }}</span></td>
-                <td>{{ $product->supplier->name ?? 'N/A' }}</td>
+                <td>{{ $product->suppliers->first()?->name ?? 'N/A' }}</td>
                 <td>
                     <a href="{{ route('purchase-orders.create') }}" class="btn btn-primary btn-sm">Create PO</a>
                 </td>

@@ -17,11 +17,15 @@
       "Bash(composer update:*)",
       "Bash(composer install:*)",
       "Bash(grep:*)",
-      "Bash(ls -la:*)"
+      "Bash(ls -la:*)",
+      "Bash(vendor/bin/pint:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "laravel-boost"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

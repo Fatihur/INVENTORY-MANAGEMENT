@@ -79,7 +79,7 @@ class ReportList extends Component
         }
 
         $products = $query->get()->map(function ($product) {
-            $stockQty = $product->stocks->sum('quantity');
+            $stockQty = $product->stocks->sum('qty_on_hand');
 
             return (object) [
                 'id' => $product->id,
@@ -198,20 +198,19 @@ class ReportList extends Component
 
     protected function getLowStockReportData()
     {
-        $products = Product::with(['stocks', 'supplier'])
+        $products = Product::with(['stocks'])
             ->whereHas('stocks', function ($q) {
-                $q->selectRaw('SUM(quantity) as total')
-                    ->havingRaw('total <= products.min_stock');
+                $q->whereRaw('qty_on_hand <= products.min_stock');
             })
             ->orWhereDoesntHave('stocks')
             ->get()
             ->filter(function ($product) {
-                $currentStock = $product->stocks->sum('quantity');
+                $currentStock = $product->stocks->sum('qty_on_hand');
 
                 return $currentStock <= $product->min_stock;
             })
             ->map(function ($product) {
-                $currentStock = $product->stocks->sum('quantity');
+                $currentStock = $product->stocks->sum('qty_on_hand');
                 $shortage = $product->min_stock - $currentStock;
                 $product->current_stock = $currentStock;
                 $product->shortage = max(0, $shortage);

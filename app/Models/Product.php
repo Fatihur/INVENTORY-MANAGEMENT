@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -61,9 +61,13 @@ class Product extends Model
 
     public function primarySupplier(): ?Supplier
     {
-        return $this->suppliers()
-            ->wherePivot('is_primary', true)
-            ->first();
+        return $this->suppliers
+            ->first(fn ($s) => $s->pivot->is_primary);
+    }
+
+    public function supplier(): BelongsToMany
+    {
+        return $this->suppliers();
     }
 
     public function purchaseOrderItems(): HasMany
