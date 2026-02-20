@@ -12,25 +12,41 @@ class BinLocationList extends Component
     use WithPagination;
 
     public $search = '';
+
     public $warehouseFilter = 'all';
+
     public $capacityFilter = 'all';
+
     public $statusFilter = 'all';
+
     public $sortBy = 'created_at';
+
     public $sortDirection = 'desc';
+
     public $perPage = 10;
 
     public $showModal = false;
+
     public $showViewModal = false;
+
     public $showDeleteModal = false;
+
     public $binId = null;
 
     public $warehouse_id_input = '';
+
     public $zone = '';
+
     public $aisle = '';
+
     public $rack = '';
+
     public $shelf = '';
+
     public $bin = '';
+
     public $capacity = '';
+
     public $is_active = true;
 
     protected $rules = [
@@ -46,13 +62,13 @@ class BinLocationList extends Component
 
     public function render()
     {
-        $query = BinLocation::with(['warehouse', 'stocks']);
+        $query = BinLocation::with(['warehouse']);
 
         if ($this->search) {
             $query->where(function ($q) {
                 $q->where('zone', 'like', "%{$this->search}%")
-                  ->orWhere('aisle', 'like', "%{$this->search}%")
-                  ->orWhere('rack', 'like', "%{$this->search}%");
+                    ->orWhere('aisle', 'like', "%{$this->search}%")
+                    ->orWhere('rack', 'like', "%{$this->search}%");
             });
         }
 
@@ -81,27 +97,28 @@ class BinLocationList extends Component
 
         return view('livewire.bin-locations.bin-location-list', [
             'binLocations' => $binLocations,
-            'warehousesList' => $warehousesList
+            'warehousesList' => $warehousesList,
         ])->title('Bin Locations - Inventory Management');
     }
 
     public function getBinCodeProperty()
     {
-        return strtoupper($this->zone . '-' . $this->aisle . '-' . $this->rack . '-' . $this->shelf . '-' . $this->bin);
+        return strtoupper($this->zone.'-'.$this->aisle.'-'.$this->rack.'-'.$this->shelf.'-'.$this->bin);
     }
 
     public function getCapacityPercentage($bin)
     {
-        if (!$bin->capacity || $bin->capacity == 0) {
+        if (! $bin->capacity || $bin->capacity == 0) {
             return 0;
         }
+
         return min(100, ($bin->current_qty / $bin->capacity) * 100);
     }
 
     public function resetForm()
     {
         $this->reset([
-            'binId', 'warehouse_id_input', 'zone', 'aisle', 'rack', 'shelf', 'bin', 'capacity', 'is_active'
+            'binId', 'warehouse_id_input', 'zone', 'aisle', 'rack', 'shelf', 'bin', 'capacity', 'is_active',
         ]);
         $this->is_active = true;
         $this->resetValidation();
@@ -176,9 +193,10 @@ class BinLocationList extends Component
     {
         $bin = BinLocation::find($this->binId);
         if ($bin) {
-            if ($bin->stocks()->count() > 0) {
+            if ($bin->current_qty > 0) {
                 $this->dispatch('error', message: 'Cannot delete bin with existing stocks');
                 $this->showDeleteModal = false;
+
                 return;
             }
             $bin->delete();
@@ -222,7 +240,7 @@ class BinLocationList extends Component
     {
         $bin = BinLocation::find($id);
         if ($bin) {
-            $bin->update(['is_active' => !$bin->is_active]);
+            $bin->update(['is_active' => ! $bin->is_active]);
             $this->dispatch('bin-updated');
         }
     }

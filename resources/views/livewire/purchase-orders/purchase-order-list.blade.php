@@ -45,9 +45,17 @@
                                     'received' => 'badge-success',
                                     'cancelled' => 'badge-danger',
                                 ];
-                                $color = $statusColors[$po->status->value] ?? 'badge-default';
+                                $color = $statusColors[$po->status] ?? 'badge-default';
+                                $statusLabels = [
+                                    'draft' => 'Draft',
+                                    'sent' => 'Sent',
+                                    'approved' => 'Approved',
+                                    'partial' => 'Partial',
+                                    'received' => 'Received',
+                                    'cancelled' => 'Cancelled',
+                                ];
                             @endphp
-                            <span class="badge {{ $color }}">{{ $po->status->label() }}</span>
+                            <span class="badge {{ $color }}">{{ $statusLabels[$po->status] ?? ucfirst($po->status) }}</span>
                         </td>
                         <td>{{ $po->order_date->format('Y-m-d') }}</td>
                         <td>Rp {{ number_format($po->total_amount, 0) }}</td>

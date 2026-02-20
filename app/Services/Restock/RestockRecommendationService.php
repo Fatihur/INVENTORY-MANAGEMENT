@@ -16,7 +16,7 @@ class RestockRecommendationService implements RestockRecommendationServiceInterf
     public function getRecommendations(): Collection
     {
         $products = Product::active()
-            ->with(['stocks', 'suppliers', 'primarySupplier'])
+            ->with(['stocks', 'suppliers'])
             ->get();
 
         return $products->map(function ($product) {
@@ -29,7 +29,7 @@ class RestockRecommendationService implements RestockRecommendationServiceInterf
                 'suggested_supplier' => $product->primarySupplier,
             ];
         })->filter(fn ($rec) => $rec->metrics['needs_restock'])
-          ->sortByDesc('priority');
+            ->sortByDesc('priority');
     }
 
     public function getBySupplier(int $supplierId): Collection

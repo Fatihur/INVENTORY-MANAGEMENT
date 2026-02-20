@@ -154,7 +154,7 @@
                                 <div style="font-weight: 600;">{{ $product->name }}</div>
                                 @if($product->category)
                                     <small style="color: #7f8c8d;">
-                                        <i class="fas fa-folder"></i> {{ $product->category->name }}
+                                        <i class="fas fa-folder"></i> {{ $product->category }}
                                     </small>
                                 @endif
                             </td>

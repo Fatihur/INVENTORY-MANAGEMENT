@@ -2,14 +2,13 @@
 
 namespace App\Livewire\Reports;
 
-use App\Models\Product;
-use App\Models\Stock;
-use App\Models\StockMovement;
 use App\Models\Batch;
-use App\Models\SalesOrder;
+use App\Models\Product;
 use App\Models\PurchaseOrder;
-use Livewire\Component;
+use App\Models\SalesOrder;
+use App\Models\StockMovement;
 use Carbon\Carbon;
+use Livewire\Component;
 
 class ReportList extends Component
 {
@@ -17,10 +16,15 @@ class ReportList extends Component
 
     // Filters
     public $dateFrom;
+
     public $dateTo;
+
     public $warehouseFilter = 'all';
+
     public $productFilter = 'all';
+
     public $category_id = '';
+
     public $exportFormat = 'pdf';
 
     public function mount()
@@ -68,7 +72,7 @@ class ReportList extends Component
 
     protected function getInventoryReportData()
     {
-        $query = Product::with(['stocks', 'category']);
+        $query = Product::with(['stocks']);
 
         if ($this->productFilter && $this->productFilter !== 'all') {
             $query->where('id', $this->productFilter);
@@ -76,11 +80,12 @@ class ReportList extends Component
 
         $products = $query->get()->map(function ($product) {
             $stockQty = $product->stocks->sum('quantity');
+
             return (object) [
                 'id' => $product->id,
                 'sku' => $product->sku,
                 'name' => $product->name,
-                'category' => $product->category?->name,
+                'category' => $product->category,
                 'stock_qty' => $stockQty,
                 'purchase_price' => $product->purchase_price ?? $product->cost_price ?? 0,
                 'stock_value' => $stockQty * ($product->purchase_price ?? $product->cost_price ?? 0),
@@ -145,7 +150,7 @@ class ReportList extends Component
         }
 
         // Sort by total and take top 5
-        usort($supplierData, fn($a, $b) => $b['total'] <=> $a['total']);
+        usort($supplierData, fn ($a, $b) => $b['total'] <=> $a['total']);
         $topSuppliers = collect(array_slice($supplierData, 0, 5));
 
         return [
@@ -185,6 +190,7 @@ class ReportList extends Component
             'movements_by_type' => $movementsByType,
             'movements' => $movements->map(function ($m) {
                 $m->qty = $m->quantity;
+
                 return $m;
             }),
         ];
@@ -195,12 +201,13 @@ class ReportList extends Component
         $products = Product::with(['stocks', 'supplier'])
             ->whereHas('stocks', function ($q) {
                 $q->selectRaw('SUM(quantity) as total')
-                  ->havingRaw('total <= products.min_stock');
+                    ->havingRaw('total <= products.min_stock');
             })
             ->orWhereDoesntHave('stocks')
             ->get()
             ->filter(function ($product) {
                 $currentStock = $product->stocks->sum('quantity');
+
                 return $currentStock <= $product->min_stock;
             })
             ->map(function ($product) {
@@ -208,6 +215,7 @@ class ReportList extends Component
                 $shortage = $product->min_stock - $currentStock;
                 $product->current_stock = $currentStock;
                 $product->shortage = max(0, $shortage);
+
                 return $product;
             });
 
