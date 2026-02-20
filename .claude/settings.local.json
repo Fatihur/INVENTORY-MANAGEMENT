@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer create-project:*)",
+      "Bash(composer require:*)",
+      "Bash(php artisan vendor:publish:*)",
+      "Bash(php artisan migrate:fresh:*)",
+      "Bash(mysql:*)",
+      "Bash(php artisan cache:clear:*)",
+      "Bash(php artisan route:clear:*)",
+      "Bash(php artisan route:list:*)",
+      "Bash(php artisan view:clear:*)",
+      "Bash(php artisan config:clear:*)",
+      "Bash(php:*)",
+      "Bash(node --version:*)",
+      "Bash(npm run build:*)",
+      "Bash(composer update:*)",
+      "Bash(composer install:*)",
+      "Bash(grep:*)",
+      "Bash(ls -la:*)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "laravel-boost"
+  ],
+  "enableAllProjectMcpServers": true
+}
