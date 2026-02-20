@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Smart Inventory' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -29,8 +29,8 @@
         .mobile-toggle {
             display: none;
             position: fixed;
-            top: 10px;
-            left: 10px;
+            top: 8px;
+            left: 8px;
             z-index: 1001;
             background: #2c3e50;
             color: #fff;
@@ -39,6 +39,9 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            min-width: 40px;
+            min-height: 40px;
+            touch-action: manipulation;
         }
 
         /* Sidebar */
@@ -564,6 +567,35 @@
             }
         }
 
+        /* Responsive Grid Utilities */
+        .grid {
+            display: grid;
+            gap: 15px;
+        }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        /* Flex Utilities */
+        .flex-col { flex-direction: column; }
+        .flex-row { flex-direction: row; }
+        .flex-wrap { flex-wrap: wrap; }
+
+        /* Responsive spacing */
+        .responsive-flex {
+            display: flex;
+            gap: 15px;
+        }
+        .responsive-flex > * {
+            flex: 1;
+        }
+
+        /* Mobile card view for tables */
+        .mobile-card-view {
+            display: none;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .mobile-toggle {
@@ -571,6 +603,7 @@
             }
             .sidebar {
                 transform: translateX(-100%);
+                width: 260px;
             }
             .sidebar.open {
                 transform: translateX(0);
@@ -579,24 +612,231 @@
                 margin-left: 0;
             }
             .content-area {
-                padding: 15px;
+                padding: 10px;
             }
+            .top-bar {
+                padding: 10px 15px;
+                height: auto;
+                min-height: 45px;
+            }
+            .top-bar h2 {
+                margin-left: 40px;
+                font-size: 13px;
+            }
+            .user-info span {
+                display: none;
+            }
+
+            /* Grid responsive */
+            .grid-cols-2,
+            .grid-cols-3,
+            .grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
+
+            /* Responsive flex */
+            .responsive-flex {
+                flex-direction: column;
+            }
+            .responsive-flex > * {
+                flex: none;
+                width: 100%;
+            }
+
+            /* Form inputs full width on mobile */
+            .form-control {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            .input-group {
+                width: 100%;
+            }
+
+            /* Filter section on mobile */
+            .filter-row {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            .filter-row > div {
+                width: 100% !important;
+            }
+            .filter-row select,
+            .filter-row input {
+                width: 100% !important;
+            }
+
+            /* Stat cards on mobile */
             .stat-card {
                 margin-bottom: 10px;
             }
+            .stat-card .panel-body {
+                padding: 12px;
+            }
+            .stat-card .text-2xl {
+                font-size: 20px;
+            }
+
+            /* Tables */
             .data-table {
                 display: block;
                 overflow-x: auto;
                 white-space: nowrap;
+                font-size: 11px;
+            }
+            .data-table th,
+            .data-table td {
+                padding: 8px 6px;
             }
             .panel-body {
                 overflow-x: auto;
+                padding: 10px;
             }
-            .top-bar h2 {
-                margin-left: 40px;
+
+            /* Buttons on mobile */
+            .btn {
+                padding: 8px 12px;
+                font-size: 13px;
+                min-height: 36px; /* Touch friendly */
             }
-            .user-info span {
-                display: none;
+            .btn-sm {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            /* Action buttons group */
+            .action-buttons {
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap;
+            }
+            .action-buttons .btn,
+            .action-buttons a {
+                flex: 1;
+                min-width: 80px;
+                text-align: center;
+                justify-content: center;
+            }
+
+            /* Modal on mobile */
+            .modal-content {
+                width: 95% !important;
+                max-width: none !important;
+                margin: 10px;
+            }
+            .modal-overlay {
+                padding: 10px;
+                align-items: flex-start;
+                overflow-y: auto;
+            }
+
+            /* Toast on mobile */
+            .toast-container {
+                left: 10px;
+                right: 10px;
+                top: 60px;
+            }
+            .toast {
+                min-width: auto;
+                max-width: none;
+                width: 100%;
+            }
+
+            /* Grid layouts in modals */
+            .modal-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .modal-grid > .modal-full-width,
+            .modal-grid > [style*="grid-column: span 2"] {
+                grid-column: span 1 !important;
+            }
+
+            /* Order items grid */
+            .items-grid {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            .items-grid > div {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+                padding: 10px !important;
+            }
+            .items-grid .form-control {
+                width: 100% !important;
+            }
+
+            /* Pagination on mobile */
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .pagination li a,
+            .pagination li span {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+
+            /* Filter badges */
+            .filter-badges {
+                gap: 5px;
+            }
+            .filter-badge {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+
+            /* Header actions */
+            .page-header {
+                flex-direction: column !important;
+                gap: 10px !important;
+                align-items: stretch !important;
+            }
+            .page-header h2 {
+                font-size: 16px;
+            }
+            .page-header .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* Empty state */
+            .empty-state {
+                padding: 30px 15px;
+            }
+            .empty-state-icon {
+                font-size: 36px;
+            }
+
+            /* Hide some table columns on mobile */
+            .hide-mobile {
+                display: none !important;
+            }
+        }
+
+        /* Tablet view */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid-cols-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .grid-cols-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .sidebar {
+                width: 200px;
+            }
+            .main-content {
+                margin-left: 200px;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .sidebar {
+                max-height: 100vh;
+                overflow-y: auto;
+            }
+            .modal-content {
+                max-height: 80vh;
             }
         }
 

@@ -1,27 +1,35 @@
 <div>
     <!-- KPI Cards -->
-    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-        <div style="flex: 1; background-color: #fff; border: 1px solid #bdc3c7; padding: 15px;">
-            <div style="font-size: 11px; color: #7f8c8d;">Total Products</div>
-            <div style="font-size: 24px; font-weight: bold; color: #2c3e50;">{{ \App\Models\Product::count() }}</div>
+    <div class="grid grid-cols-4" style="margin-bottom: 20px;">
+        <div class="panel stat-card">
+            <div class="panel-body" style="padding: 15px;">
+                <div style="font-size: 11px; color: #7f8c8d;">Total Products</div>
+                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #2c3e50;">{{ \App\Models\Product::count() }}</div>
+            </div>
         </div>
-        <div style="flex: 1; background-color: #fff; border: 1px solid #bdc3c7; padding: 15px;">
-            <div style="font-size: 11px; color: #7f8c8d;">Low Stock</div>
-            <div style="font-size: 24px; font-weight: bold; color: #f39c12;">{{ \App\Models\Product::lowStock()->count() }}</div>
+        <div class="panel stat-card">
+            <div class="panel-body" style="padding: 15px;">
+                <div style="font-size: 11px; color: #7f8c8d;">Low Stock</div>
+                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #f39c12;">{{ \App\Models\Product::lowStock()->count() }}</div>
+            </div>
         </div>
-        <div style="flex: 1; background-color: #fff; border: 1px solid #bdc3c7; padding: 15px;">
-            <div style="font-size: 11px; color: #7f8c8d;">Out of Stock</div>
-            <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">{{ \App\Models\Product::outOfStock()->count() }}</div>
+        <div class="panel stat-card">
+            <div class="panel-body" style="padding: 15px;">
+                <div style="font-size: 11px; color: #7f8c8d;">Out of Stock</div>
+                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #e74c3c;">{{ \App\Models\Product::outOfStock()->count() }}</div>
+            </div>
         </div>
-        <div style="flex: 1; background-color: #fff; border: 1px solid #bdc3c7; padding: 15px;">
-            <div style="font-size: 11px; color: #7f8c8d;">Pending POs</div>
-            <div style="font-size: 24px; font-weight: bold; color: #3498db;">{{ \App\Models\PurchaseOrder::whereIn('status', ['draft', 'sent', 'approved'])->count() }}</div>
+        <div class="panel stat-card">
+            <div class="panel-body" style="padding: 15px;">
+                <div style="font-size: 11px; color: #7f8c8d;">Pending POs</div>
+                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #3498db;">{{ \App\Models\PurchaseOrder::whereIn('status', ['draft', 'sent', 'approved'])->count() }}</div>
+            </div>
         </div>
     </div>
 
     <!-- Quick Actions & Recent Activities -->
-    <div style="display: flex; gap: 15px;">
-        <div style="flex: 1;">
+    <div class="responsive-flex">
+        <div>
             <div class="panel">
                 <div class="panel-header">Quick Actions</div>
                 <div class="panel-body">

@@ -1,6 +1,6 @@
 <div>
     <!-- Page Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2 style="font-size: 14px; font-weight: bold;">Customers</h2>
         @can('customers.create')
         <button wire:click="create" class="btn btn-primary">+ Add Customer</button>
@@ -9,14 +9,14 @@
 
     <!-- Filters -->
     <div class="panel" style="margin-bottom: 15px;">
-        <div class="panel-body" style="display: flex; gap: 10px; border-bottom: 1px solid #bdc3c7;">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Name, code, email..." class="form-control" style="width: 200px;">
-            <select wire:model.live="status" class="form-control" style="width: 150px;">
+        <div class="panel-body filter-row" style="display: flex; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #bdc3c7;">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Name, code, email..." class="form-control" style="flex: 1; min-width: 150px;">
+            <select wire:model.live="status" class="form-control" style="flex: 0 0 auto; min-width: 120px;">
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
             </select>
-            <select wire:model.live="perPage" class="form-control" style="width: 120px;">
+            <select wire:model.live="perPage" class="form-control" style="flex: 0 0 auto; min-width: 120px;">
                 <option value="10">10 per page</option>
                 <option value="25">25 per page</option>
                 <option value="50">50 per page</option>
@@ -114,9 +114,9 @@
 
     <!-- Create/Edit Modal -->
     @if($showModal)
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;"
+    <div class="modal-overlay"
          wire:click.self="$set('showModal', false)">
-        <div style="background: #fff; width: 700px; max-height: 90vh; overflow-y: auto; border: 1px solid #bdc3c7;">
+        <div class="modal-content" style="background: #fff; width: 700px; max-width: 90vw; max-height: 90vh; overflow-y: auto; border: 1px solid #bdc3c7;">
             <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <span>{{ $customerId ? 'Edit Customer' : 'Add New Customer' }}</span>
                 <button wire:click="$set('showModal', false)" style="background: none; border: none; cursor: pointer; font-size: 14px;"><i class="fas fa-times"></i></button>
@@ -124,8 +124,8 @@
 
             <form wire:submit="save">
                 <div style="padding: 15px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div style="grid-column: span 2;">
+                    <div class="modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="grid-column: span 2;" class="modal-full-width">
                             <label class="form-label">Customer Name <span style="color: #e74c3c;">*</span></label>
                             <input type="text" wire:model="name" placeholder="Enter customer name" class="form-control" autofocus>
                             @error('name') <div style="color: #e74c3c; font-size: 10px; margin-top: 3px;">{{ $message }}</div> @enderror
@@ -167,7 +167,7 @@
                             </div>
                         </div>
 
-                        <div style="grid-column: span 2;">
+                        <div style="grid-column: span 2;" class="modal-full-width">
                             <label class="form-label">Notes</label>
                             <textarea wire:model="notes" rows="3" placeholder="Additional notes..." class="form-control"></textarea>
                         </div>
@@ -185,9 +185,9 @@
 
     <!-- View Modal -->
     @if($showViewModal)
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;"
+    <div class="modal-overlay"
          wire:click.self="$set('showViewModal', false)">
-        <div style="background: #fff; width: 600px; max-height: 90vh; overflow-y: auto; border: 1px solid #bdc3c7;">
+        <div class="modal-content" style="background: #fff; width: 600px; max-width: 90vw; max-height: 90vh; overflow-y: auto; border: 1px solid #bdc3c7;">
             <div class="panel-header">Customer Details</div>
 
             <div style="padding: 15px;">
@@ -199,7 +199,7 @@
                     <p style="color: #7f8c8d; font-size: 11px;">{{ $customer->code ?? 'CUST-XXX' }}</p>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div>
                         <div style="font-size: 10px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 3px;">Email Address</div>
                         <div style="font-weight: bold;">{{ $email ?? '-' }}</div>

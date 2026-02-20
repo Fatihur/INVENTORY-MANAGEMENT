@@ -1,6 +1,6 @@
 <div>
     <!-- Page Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2 style="font-size: 14px; font-weight: bold;">Sales Orders</h2>
         @can('sales-orders.create')
         <button wire:click="create" class="btn btn-primary">+ New Order</button>
@@ -9,9 +9,9 @@
 
     <!-- Filters -->
     <div class="panel" style="margin-bottom: 15px;">
-        <div class="panel-body" style="display: flex; gap: 10px; border-bottom: 1px solid #bdc3c7;">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Order number..." class="form-control" style="width: 200px;">
-            <select wire:model.live="status" class="form-control" style="width: 150px;">
+        <div class="panel-body filter-row" style="display: flex; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #bdc3c7;">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Order number..." class="form-control" style="flex: 1; min-width: 150px;">
+            <select wire:model.live="status" class="form-control" style="flex: 0 0 auto; min-width: 120px;">
                 <option value="all">All Status</option>
                 <option value="draft">Draft</option>
                 <option value="confirmed">Confirmed</option>
@@ -20,7 +20,7 @@
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
             </select>
-            <select wire:model.live="perPage" class="form-control" style="width: 120px;">
+            <select wire:model.live="perPage" class="form-control" style="flex: 0 0 auto; min-width: 120px;">
                 <option value="10">10 per page</option>
                 <option value="25">25 per page</option>
                 <option value="50">50 per page</option>
@@ -128,9 +128,9 @@
 
     <!-- Create/Edit Modal -->
     @if($showModal)
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;"
+    <div class="modal-overlay"
          wire:click.self="$set('showModal', false)">
-        <div style="background: #fff; width: 800px; max-height: 90vh; overflow-y: auto; border: 1px solid #bdc3c7;">
+        <div class="modal-content" style="background: #fff; width: 800px; max-width: 90vw; max-height: 90vh; overflow-y: auto; border: 1px solid #bdc3c7;">
             <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <span>{{ $orderId ? 'Edit Order' : 'New Sales Order' }}</span>
                 <button wire:click="$set('showModal', false)" style="background: none; border: none; cursor: pointer; font-size: 14px;"><i class="fas fa-times"></i></button>
@@ -139,7 +139,7 @@
             <form wire:submit="save">
                 <div style="padding: 15px;">
                     <!-- Order Info -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ecf0f1;">
+                    <div class="modal-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ecf0f1;">
                         <div>
                             <label class="form-label">Customer <span style="color: #e74c3c;">*</span></label>
                             <select wire:model="customer_id" class="form-control">
@@ -174,7 +174,7 @@
                     <div style="margin-bottom: 15px;">
                         <h4 style="font-size: 13px; font-weight: bold; margin-bottom: 10px;">Order Items</h4>
                         @foreach($items as $index => $item)
-                        <div style="display: grid; grid-template-columns: 4fr 1fr 2fr 1fr 1fr 1fr; gap: 5px; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border: 1px solid #ecf0f1;">
+                        <div class="items-grid" style="display: grid; grid-template-columns: 3fr 1fr 2fr 1fr 1fr auto; gap: 5px; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border: 1px solid #ecf0f1; align-items: end;">
                             <div>
                                 <label class="form-label" style="font-size: 10px;">Product</label>
                                 <select wire:model="items.{{ $index }}.product_id" class="form-control">
@@ -225,13 +225,13 @@
 
     <!-- View Modal -->
     @if($showViewModal)
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;"
+    <div class="modal-overlay"
          wire:click.self="$set('showViewModal', false)">
-        <div style="background: #fff; width: 700px; max-height: 90vh; overflow-y: auto; border: 1px solid #bdc3c7;">
+        <div class="modal-content" style="background: #fff; width: 700px; max-width: 90vw; max-height: 90vh; overflow-y: auto; border: 1px solid #bdc3c7;">
             <div class="panel-header">Order Details</div>
 
             <div style="padding: 15px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ecf0f1;">
+                <div class="modal-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ecf0f1;">
                     <div>
                         <div style="font-size: 10px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 3px;">Order Number</div>
                         <div style="font-weight: bold; color: #3498db;">{{ \App\Models\SalesOrder::find($orderId)?->so_number ?? 'N/A' }}</div>

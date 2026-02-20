@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Smart Inventory' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -26,7 +26,9 @@
         .login-box {
             background-color: #fff;
             border: 1px solid #bdc3c7;
-            width: 350px;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
         }
         .login-header {
@@ -102,6 +104,34 @@
             padding: 10px;
             margin-top: 15px;
             font-size: 11px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .login-box {
+                margin: 10px;
+                width: 100%;
+            }
+            .login-header {
+                padding: 15px;
+            }
+            .login-header h1 {
+                font-size: 16px;
+            }
+            .login-body {
+                padding: 20px;
+            }
+            .form-control {
+                font-size: 16px; /* Prevent zoom on iOS */
+                padding: 10px;
+            }
+            .btn {
+                padding: 12px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>

@@ -1,6 +1,6 @@
 <div>
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2 style="font-size: 14px; font-weight: bold;">
             <i class="fas fa-box"></i> Products
         </h2>
@@ -42,9 +42,9 @@
     <!-- Filters Panel -->
     <div class="panel" style="margin-bottom: 15px;">
         <div class="panel-body">
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+            <div class="filter-row" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
                 <!-- Search with Clear Button -->
-                <div style="position: relative; width: 250px;">
+                <div style="position: relative; flex: 1; min-width: 200px;">
                     <label class="form-label" style="font-size: 11px; color: #7f8c8d;">
                         <i class="fas fa-search"></i> Search
                     </label>
@@ -64,11 +64,11 @@
                 </div>
 
                 <!-- Status Filter -->
-                <div>
+                <div style="flex: 0 0 auto;">
                     <label class="form-label" style="font-size: 11px; color: #7f8c8d;">
                         <i class="fas fa-filter"></i> Status
                     </label>
-                    <select wire:model.live="status" class="form-control" style="width: 150px;">
+                    <select wire:model.live="status" class="form-control" style="width: 150px; min-width: 150px;">
                         <option value="">All Status</option>
                         <option value="low">Low Stock</option>
                         <option value="out">Out of Stock</option>
@@ -78,11 +78,11 @@
                 </div>
 
                 <!-- Per Page -->
-                <div>
+                <div style="flex: 0 0 auto;">
                     <label class="form-label" style="font-size: 11px; color: #7f8c8d;">
                         <i class="fas fa-list-ol"></i> Show
                     </label>
-                    <select wire:model.live="perPage" class="form-control" style="width: 120px;">
+                    <select wire:model.live="perPage" class="form-control" style="width: 120px; min-width: 120px;">
                         <option value="10">10 per page</option>
                         <option value="25">25 per page</option>
                         <option value="50">50 per page</option>
