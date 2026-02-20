@@ -1,5 +1,5 @@
 <div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2 style="font-size: 14px; font-weight: bold;">Purchase Orders</h2>
         @can('purchase-orders.create')
             <a wire:navigate href="{{ route('purchase-orders.create') }}" class="btn btn-primary">+ Create PO</a>
@@ -7,8 +7,8 @@
     </div>
 
     <div class="panel">
-        <div class="panel-body" style="border-bottom: 1px solid #bdc3c7;">
-            <select wire:model.live="status" class="form-control" style="width: 150px;">
+        <div class="panel-body filter-row" style="display: flex; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #bdc3c7;">
+            <select wire:model.live="status" class="form-control" style="flex: 0 0 auto; min-width: 150px;">
                 <option value="">All Status</option>
                 <option value="draft">Draft</option>
                 <option value="sent">Sent</option>

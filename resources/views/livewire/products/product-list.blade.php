@@ -12,7 +12,7 @@
     </div>
 
     <!-- Stats Cards -->
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 15px;">
+    <div class="grid grid-cols-4" style="gap: 15px; margin-bottom: 15px;">
         <div class="panel stat-card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white;">
             <div class="panel-body" style="padding: 15px; text-align: center;">
                 <div style="font-size: 24px; font-weight: bold;">{{ $totalProducts ?? 0 }}</div>

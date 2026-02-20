@@ -1,7 +1,7 @@
 <div>
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2 style="font-size: 14px; font-weight: bold;">Stock Overview</h2>
-        <div class="action-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div class="action-buttons" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
             <a wire:navigate href="{{ route('stock.scanner') }}" class="btn btn-success" style="background-color: #27ae60; color: #fff; border-color: #229954;">Scanner</a>
             <a wire:navigate href="{{ route('stock.in') }}" class="btn btn-primary">Stock In</a>
             <a wire:navigate href="{{ route('stock.out') }}" class="btn" style="background-color: #e67e22; color: #fff;">Stock Out</a>

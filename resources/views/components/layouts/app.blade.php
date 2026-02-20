@@ -599,32 +599,63 @@
         /* Responsive */
         @media (max-width: 768px) {
             .mobile-toggle {
-                display: block;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             }
             .sidebar {
                 transform: translateX(-100%);
-                width: 260px;
+                width: 280px;
+                max-width: 85vw;
             }
             .sidebar.open {
                 transform: translateX(0);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+            }
+            .nav-link {
+                padding: 16px 20px;
+                font-size: 14px;
+            }
+            .nav-link i {
+                width: 28px;
+                font-size: 16px;
+            }
+            .nav-section {
+                padding: 12px 20px 8px;
+                font-size: 11px;
             }
             .main-content {
                 margin-left: 0;
             }
             .content-area {
-                padding: 10px;
+                padding: 12px;
+                min-height: calc(100vh - 60px);
             }
             .top-bar {
-                padding: 10px 15px;
+                padding: 12px 15px;
                 height: auto;
-                min-height: 45px;
+                min-height: 55px;
+                position: sticky;
+                top: 0;
             }
             .top-bar h2 {
-                margin-left: 40px;
-                font-size: 13px;
+                margin-left: 50px;
+                font-size: 14px;
+                line-height: 1.3;
+            }
+            .user-info {
+                gap: 8px;
             }
             .user-info span {
                 display: none;
+            }
+            .user-info .btn {
+                padding: 8px 12px;
+                font-size: 12px;
             }
 
             /* Grid responsive */
@@ -667,6 +698,15 @@
             /* Stat cards on mobile */
             .stat-card {
                 margin-bottom: 10px;
+                min-height: 80px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .stat-card .panel-body {
+                width: 100%;
+                text-align: center;
+            }
             }
             .stat-card .panel-body {
                 padding: 12px;
@@ -675,20 +715,35 @@
                 font-size: 20px;
             }
 
-            /* Tables */
+            /* Tables - Make scrollable on mobile */
             .data-table {
                 display: block;
                 overflow-x: auto;
                 white-space: nowrap;
-                font-size: 11px;
+                font-size: 12px;
+                -webkit-overflow-scrolling: touch;
             }
             .data-table th,
             .data-table td {
-                padding: 8px 6px;
+                padding: 12px 10px;
+                min-width: 80px;
+            }
+            .data-table th:first-child,
+            .data-table td:first-child {
+                min-width: auto;
             }
             .panel-body {
                 overflow-x: auto;
-                padding: 10px;
+                padding: 12px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Touch-friendly action buttons */
+            .action-link {
+                padding: 8px 10px;
+                display: inline-block;
+                min-width: 36px;
+                text-align: center;
             }
 
             /* Buttons on mobile */
@@ -705,15 +760,23 @@
             /* Action buttons group */
             .action-buttons {
                 display: flex;
-                gap: 5px;
+                gap: 8px;
                 flex-wrap: wrap;
+                justify-content: flex-end;
+                width: 100%;
+            }
+            .page-header .action-buttons {
+                justify-content: stretch;
             }
             .action-buttons .btn,
             .action-buttons a {
                 flex: 1;
-                min-width: 80px;
+                min-width: 90px;
+                min-height: 40px;
                 text-align: center;
                 justify-content: center;
+                padding: 10px 14px;
+                font-size: 13px;
             }
 
             /* Modal on mobile */
@@ -769,11 +832,17 @@
             .pagination {
                 flex-wrap: wrap;
                 justify-content: center;
+                gap: 4px;
             }
             .pagination li a,
             .pagination li span {
-                padding: 5px 10px;
-                font-size: 11px;
+                padding: 10px 14px;
+                font-size: 13px;
+                min-width: 40px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             /* Filter badges */

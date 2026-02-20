@@ -5,7 +5,7 @@
     </div>
 
     <!-- Report Type Cards -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+    <div class="grid grid-cols-3" style="gap: 15px; margin-bottom: 20px;">
         <div wire:click="setReport('inventory')" style="cursor: pointer; border: 2px solid {{ $activeReport === 'inventory' ? '#3498db' : '#ecf0f1' }}; border-radius: 8px; padding: 20px; text-align: center; background: {{ $activeReport === 'inventory' ? '#ebf5fb' : 'white' }}; transition: all 0.3s;">
             <div style="font-size: 36px; margin-bottom: 10px; color: #3498db;"><i class="fas fa-box"></i></div>
             <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">Inventory Report</h3>
@@ -47,7 +47,7 @@
     <div class="panel" style="margin-bottom: 20px;">
         <div class="panel-header">Report Filters</div>
         <div class="panel-body">
-            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+            <div class="filter-row" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
                 @if(in_array($activeReport, ['sales', 'purchase', 'movement']))
                 <div>
                     <label class="form-label">From Date</label>
