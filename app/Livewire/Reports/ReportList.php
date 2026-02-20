@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\SalesOrder;
 use App\Models\StockMovement;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
@@ -279,13 +280,16 @@ class ReportList extends Component
 
     public function export()
     {
-        $fileName = $this->activeReport.'_report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
-        $tempPath = storage_path('app/temp/'.$fileName);
-
-        // Ensure temp directory exists
-        if (! is_dir(dirname($tempPath))) {
-            mkdir(dirname($tempPath), 0755, true);
+        if ($this->exportFormat === 'pdf') {
+            $this->exportPdf();
+        } else {
+            $this->exportExcel();
         }
+    }
+
+    protected function exportExcel()
+    {
+        $fileName = $this->activeReport.'_report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
 
         try {
             switch ($this->activeReport) {
@@ -307,12 +311,60 @@ class ReportList extends Component
                     return;
             }
 
-            // Store filename in session for download
-            session(['download_file' => $fileName]);
             $this->dispatch('report-generated', filename: $fileName);
-            $this->dispatch('toast', ['message' => 'Report generated successfully', 'type' => 'success']);
+            $this->dispatch('toast', ['message' => 'Excel report generated successfully', 'type' => 'success']);
         } catch (\Exception $e) {
             $this->dispatch('toast', ['message' => 'Export failed: '.$e->getMessage(), 'type' => 'error']);
+        }
+    }
+
+    protected function exportPdf()
+    {
+        $fileName = $this->activeReport.'_report_'.now()->format('Y-m-d_H-i-s').'.pdf';
+        $tempPath = storage_path('app/temp/'.$fileName);
+
+        // Ensure temp directory exists
+        if (! is_dir(dirname($tempPath))) {
+            mkdir(dirname($tempPath), 0755, true);
+        }
+
+        try {
+            switch ($this->activeReport) {
+                case 'inventory':
+                    $pdf = Pdf::loadView('reports.pdf.inventory', [
+                        'data' => $this->getInventoryReportData(),
+                    ]);
+                    break;
+                case 'sales':
+                    $pdf = Pdf::loadView('reports.pdf.sales', [
+                        'data' => $this->getSalesReportData(),
+                        'dateFrom' => $this->dateFrom,
+                        'dateTo' => $this->dateTo,
+                    ]);
+                    break;
+                case 'purchase':
+                    $pdf = Pdf::loadView('reports.pdf.purchase', [
+                        'data' => $this->getPurchaseReportData(),
+                        'dateFrom' => $this->dateFrom,
+                        'dateTo' => $this->dateTo,
+                    ]);
+                    break;
+                case 'low_stock':
+                    $pdf = Pdf::loadView('reports.pdf.low-stock', [
+                        'data' => $this->getLowStockReportData(),
+                    ]);
+                    break;
+                default:
+                    $this->dispatch('toast', ['message' => 'PDF export not available for this report type', 'type' => 'warning']);
+
+                    return;
+            }
+
+            $pdf->save($tempPath);
+            $this->dispatch('report-generated', filename: $fileName);
+            $this->dispatch('toast', ['message' => 'PDF report generated successfully', 'type' => 'success']);
+        } catch (\Exception $e) {
+            $this->dispatch('toast', ['message' => 'PDF export failed: '.$e->getMessage(), 'type' => 'error']);
         }
     }
 }

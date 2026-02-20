@@ -86,9 +86,9 @@
 
                 <div>
                     <label class="form-label">Export Format</label>
-                    <select wire:model="exportFormat" class="form-control">
-                        <option value="pdf">PDF</option>
-                        <option value="excel">Excel</option>
+                    <select wire:model.live="exportFormat" class="form-control">
+                        <option value="excel">Excel (.xlsx)</option>
+                        <option value="pdf">PDF Document</option>
                     </select>
                 </div>
 
