@@ -92,8 +92,11 @@
                     </select>
                 </div>
 
-                <button wire:click="export" class="btn btn-primary">
-                    <i class="fas fa-download"></i> Generate Report
+                <button wire:click="export" wire:loading.attr="disabled" class="btn btn-primary">
+                    <i class="fas fa-download" wire:loading.remove></i>
+                    <i class="fas fa-spinner fa-spin" wire:loading></i>
+                    <span wire:loading>Generating...</span>
+                    <span wire:loading.remove>Generate Report</span>
                 </button>
             </div>
         </div>
@@ -151,4 +154,14 @@
             @endswitch
         </div>
     </div>
+
+@script
+<script>
+    $wire.on('report-generated', ({ filename }) => {
+        // Trigger file download
+        const downloadUrl = '{{ route('reports.download', ['filename' => '__FILENAME__']) }}'.replace('__FILENAME__', filename);
+        window.location.href = downloadUrl;
+    });
+</script>
+@endscript
 </div>

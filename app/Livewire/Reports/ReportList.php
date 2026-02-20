@@ -2,6 +2,10 @@
 
 namespace App\Livewire\Reports;
 
+use App\Exports\InventoryReportExport;
+use App\Exports\LowStockReportExport;
+use App\Exports\PurchaseReportExport;
+use App\Exports\SalesReportExport;
 use App\Models\Batch;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
@@ -9,6 +13,7 @@ use App\Models\SalesOrder;
 use App\Models\StockMovement;
 use Carbon\Carbon;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportList extends Component
 {
@@ -25,7 +30,11 @@ class ReportList extends Component
 
     public $category_id = '';
 
-    public $exportFormat = 'pdf';
+    public $exportFormat = 'excel';
+
+    public $downloadUrl = null;
+
+    public $downloadFilename = null;
 
     public function mount()
     {
@@ -270,7 +279,40 @@ class ReportList extends Component
 
     public function export()
     {
-        // This would be implemented with Excel export functionality
-        $this->dispatch('export-started');
+        $fileName = $this->activeReport.'_report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
+        $tempPath = storage_path('app/temp/'.$fileName);
+
+        // Ensure temp directory exists
+        if (! is_dir(dirname($tempPath))) {
+            mkdir(dirname($tempPath), 0755, true);
+        }
+
+        try {
+            switch ($this->activeReport) {
+                case 'inventory':
+                    Excel::store(new InventoryReportExport($this->productFilter), 'temp/'.$fileName);
+                    break;
+                case 'sales':
+                    Excel::store(new SalesReportExport($this->dateFrom, $this->dateTo), 'temp/'.$fileName);
+                    break;
+                case 'purchase':
+                    Excel::store(new PurchaseReportExport($this->dateFrom, $this->dateTo), 'temp/'.$fileName);
+                    break;
+                case 'low_stock':
+                    Excel::store(new LowStockReportExport, 'temp/'.$fileName);
+                    break;
+                default:
+                    $this->dispatch('toast', ['message' => 'Export not available for this report type', 'type' => 'warning']);
+
+                    return;
+            }
+
+            // Store filename in session for download
+            session(['download_file' => $fileName]);
+            $this->dispatch('report-generated', filename: $fileName);
+            $this->dispatch('toast', ['message' => 'Report generated successfully', 'type' => 'success']);
+        } catch (\Exception $e) {
+            $this->dispatch('toast', ['message' => 'Export failed: '.$e->getMessage(), 'type' => 'error']);
+        }
     }
 }

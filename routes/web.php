@@ -1,37 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Livewire\Approvals\ApprovalList;
+use App\Livewire\Batches\BatchList;
+use App\Livewire\BinLocations\BinLocationList;
+use App\Livewire\Customers;
 use App\Livewire\Dashboard\Dashboard;
-use App\Livewire\Products\ProductList;
-use App\Livewire\Products\ProductForm;
 use App\Livewire\Products\ProductDetail;
+use App\Livewire\Products\ProductForm;
+use App\Livewire\Products\ProductList;
 use App\Livewire\Products\QrCodePrinter;
-use App\Livewire\Stock\StockList;
-use App\Livewire\Stock\StockScanner;
-use App\Livewire\Stock\StockIn;
-use App\Livewire\Stock\StockOut;
-use App\Livewire\Stock\StockTransfer;
+use App\Livewire\PurchaseOrders\GoodsReceipt;
+use App\Livewire\PurchaseOrders\PurchaseOrderDetail;
+use App\Livewire\PurchaseOrders\PurchaseOrderForm;
+use App\Livewire\PurchaseOrders\PurchaseOrderList;
+use App\Livewire\Reports\ReportList;
+use App\Livewire\Restock\RestockRecommendations;
+use App\Livewire\SalesOrders;
+use App\Livewire\Settings\ScannerSettings;
 use App\Livewire\Stock\StockAdjustment;
-use App\Livewire\Suppliers\SupplierList;
+use App\Livewire\Stock\StockIn;
+use App\Livewire\Stock\StockList;
+use App\Livewire\Stock\StockOut;
+use App\Livewire\Stock\StockScanner;
+use App\Livewire\Stock\StockTransfer;
+use App\Livewire\StockOpname\StockOpnameList;
 use App\Livewire\Suppliers\SupplierForm;
+use App\Livewire\Suppliers\SupplierList;
 use App\Livewire\Suppliers\SupplierPerformance;
 use App\Livewire\Suppliers\SupplierProducts;
-use App\Livewire\Users\UserList;
 use App\Livewire\Users\UserForm;
-use App\Livewire\PurchaseOrders\PurchaseOrderList;
-use App\Livewire\PurchaseOrders\PurchaseOrderForm;
-use App\Livewire\PurchaseOrders\PurchaseOrderDetail;
-use App\Livewire\PurchaseOrders\GoodsReceipt;
-use App\Livewire\Restock\RestockRecommendations;
-use App\Livewire\Customers;
-use App\Livewire\SalesOrders;
-use App\Livewire\Batches\BatchList;
-use App\Livewire\StockOpname\StockOpnameList;
-use App\Livewire\BinLocations\BinLocationList;
-use App\Livewire\Approvals\ApprovalList;
-use App\Livewire\Reports\ReportList;
+use App\Livewire\Users\UserList;
 use App\Livewire\Warehouses\WarehouseList;
-use App\Livewire\Settings\ScannerSettings;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('login'));
 
@@ -145,5 +145,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/scanner', ScannerSettings::class)->name('settings.scanner');
     });
 });
+
+// Report download route
+Route::get('/reports/download/{filename}', function ($filename) {
+    $path = storage_path('app/temp/'.$filename);
+
+    if (! file_exists($path)) {
+        abort(404, 'File not found');
+    }
+
+    return response()->download($path)->deleteFileAfterSend();
+})->middleware(['auth'])->name('reports.download');
 
 require __DIR__.'/auth.php';
