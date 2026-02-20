@@ -14,15 +14,19 @@
             padding: 0;
             box-sizing: border-box;
         }
-        body {
+        html, body {
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             font-size: 12px;
             background-color: #f0f0f0;
             color: #333;
+            max-width: 100vw;
+            overflow-x: hidden;
         }
         .wrapper {
             display: flex;
             min-height: 100vh;
+            max-width: 100vw;
+            overflow-x: hidden;
         }
 
         /* Mobile Menu Toggle */
@@ -125,6 +129,7 @@
             display: flex;
             flex-direction: column;
             transition: margin-left 0.3s ease;
+            max-width: calc(100vw - 220px);
         }
         .top-bar {
             background-color: #fff;
@@ -157,6 +162,8 @@
         .content-area {
             padding: 20px;
             flex: 1;
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         /* Cards & Panels */
@@ -630,10 +637,16 @@
             }
             .main-content {
                 margin-left: 0;
+                max-width: 100vw;
+                width: 100vw;
+                overflow-x: hidden;
             }
             .content-area {
-                padding: 12px;
+                padding: 10px;
                 min-height: calc(100vh - 60px);
+                max-width: 100vw;
+                width: 100%;
+                overflow-x: hidden;
             }
             .top-bar {
                 padding: 12px 15px;
@@ -658,11 +671,28 @@
                 font-size: 12px;
             }
 
-            /* Grid responsive */
+            /* Grid responsive - ensure single column and fit container */
+            .grid {
+                width: 100%;
+                max-width: 100%;
+                grid-template-columns: 1fr !important;
+            }
+            .grid-cols-1,
             .grid-cols-2,
             .grid-cols-3,
             .grid-cols-4 {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            /* Report cards on mobile */
+            .grid > div[style*="cursor: pointer"] {
+                padding: 15px !important;
+                min-height: 100px;
+            }
+            .grid > div[style*="cursor: pointer"] h3 {
+                font-size: 13px !important;
             }
 
             /* Responsive flex */
@@ -702,17 +732,22 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                width: 100%;
             }
             .stat-card .panel-body {
                 width: 100%;
                 text-align: center;
-            }
-            }
-            .stat-card .panel-body {
                 padding: 12px;
             }
             .stat-card .text-2xl {
                 font-size: 20px;
+            }
+
+            /* Panels on mobile */
+            .panel {
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
             }
 
             /* Tables - Make scrollable on mobile */
@@ -722,6 +757,8 @@
                 white-space: nowrap;
                 font-size: 12px;
                 -webkit-overflow-scrolling: touch;
+                width: 100%;
+                max-width: 100%;
             }
             .data-table th,
             .data-table td {
@@ -736,6 +773,8 @@
                 overflow-x: auto;
                 padding: 12px;
                 -webkit-overflow-scrolling: touch;
+                width: 100%;
+                max-width: 100%;
             }
 
             /* Touch-friendly action buttons */
@@ -859,9 +898,12 @@
                 flex-direction: column !important;
                 gap: 10px !important;
                 align-items: stretch !important;
+                width: 100%;
+                max-width: 100%;
             }
             .page-header h2 {
-                font-size: 16px;
+                font-size: 14px;
+                word-break: break-word;
             }
             .page-header .btn {
                 width: 100%;
@@ -882,6 +924,15 @@
             }
         }
 
+        /* Report cards on mobile */
+        .grid > div[style*="cursor: pointer"] {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
         /* Tablet view */
         @media (min-width: 769px) and (max-width: 1024px) {
             .grid-cols-4 {
@@ -895,6 +946,7 @@
             }
             .main-content {
                 margin-left: 200px;
+                max-width: calc(100vw - 200px);
             }
         }
 
