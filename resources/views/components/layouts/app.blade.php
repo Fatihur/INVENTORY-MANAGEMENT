@@ -103,11 +103,40 @@
             margin-right: 8px;
         }
         .nav-section {
-            padding: 10px 15px 5px;
-            font-size: 10px;
+            padding: 12px 15px;
+            font-size: 11px;
             text-transform: uppercase;
-            color: #7f8c8d;
+            color: #95a5a6;
             font-weight: bold;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .nav-section:hover {
+            background-color: #34495e;
+            color: #ecf0f1;
+        }
+        .nav-section i.toggle-icon {
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+        .nav-section.collapsed i.toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .nav-section.collapsed {
+            border-bottom: none;
+        }
+        .nav-group {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            max-height: 1000px;
+        }
+        .nav-group.collapsed {
+            max-height: 0;
         }
 
         /* Overlay for mobile */
@@ -632,8 +661,22 @@
                 font-size: 16px;
             }
             .nav-section {
-                padding: 12px 20px 8px;
+                padding: 14px 18px;
                 font-size: 11px;
+                border-bottom: 1px solid #34495e;
+                cursor: pointer;
+            }
+            .nav-section:hover {
+                background-color: #34495e;
+            }
+            .nav-section i.toggle-icon {
+                font-size: 10px;
+            }
+            .nav-group {
+                max-height: none !important;
+            }
+            .nav-group.collapsed {
+                max-height: 0 !important;
             }
             .main-content {
                 margin-left: 0;
@@ -1051,117 +1094,145 @@
             </div>
 
             <ul class="nav-menu">
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </a>
+                {{-- Main Menu --}}
+                <li class="nav-section" onclick="toggleNavGroup('nav-main')">
+                    <span>Main</span>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
                 </li>
+                <ul class="nav-group" id="nav-main">
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
 
-                @can('products.view')
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}">
-                        <i class="fas fa-box"></i> Products
-                    </a>
-                </li>
-                @endcan
+                    @can('products.view')
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}">
+                            <i class="fas fa-box"></i> Products
+                        </a>
+                    </li>
+                    @endcan
 
-                @can('stock.view')
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('stock.index') }}" class="nav-link {{ request()->routeIs('stock.*') ? 'active' : '' }}">
-                        <i class="fas fa-warehouse"></i> Stock
-                    </a>
-                </li>
-                @endcan
+                    @can('stock.view')
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('stock.index') }}" class="nav-link {{ request()->routeIs('stock.*') ? 'active' : '' }}">
+                            <i class="fas fa-warehouse"></i> Stock
+                        </a>
+                    </li>
+                    @endcan
 
-                @can('suppliers.view')
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
-                        <i class="fas fa-truck"></i> Suppliers
-                    </a>
-                </li>
-                @endcan
+                    @can('suppliers.view')
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}">
+                            <i class="fas fa-truck"></i> Suppliers
+                        </a>
+                    </li>
+                    @endcan
 
-                @can('purchase-orders.view')
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('purchase-orders.index') }}" class="nav-link {{ request()->routeIs('purchase-orders.*') ? 'active' : '' }}">
-                        <i class="fas fa-file-invoice"></i> Purchase Orders
-                    </a>
-                </li>
-                @endcan
+                    @can('purchase-orders.view')
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('purchase-orders.index') }}" class="nav-link {{ request()->routeIs('purchase-orders.*') ? 'active' : '' }}">
+                            <i class="fas fa-file-invoice"></i> Purchase Orders
+                        </a>
+                    </li>
+                    @endcan
 
-                @can('restock.view')
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('restock.recommendations') }}" class="nav-link {{ request()->routeIs('restock.*') ? 'active' : '' }}">
-                        <i class="fas fa-sync-alt"></i> Restock
-                    </a>
-                </li>
-                @endcan
+                    @can('restock.view')
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('restock.recommendations') }}" class="nav-link {{ request()->routeIs('restock.*') ? 'active' : '' }}">
+                            <i class="fas fa-sync-alt"></i> Restock
+                        </a>
+                    </li>
+                    @endcan
+                </ul>
 
+                {{-- Sales Menu --}}
                 @role('owner|admin|manager')
-                <li class="nav-section">Sales</li>
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
-                        <i class="fas fa-users"></i> Customers
-                    </a>
+                <li class="nav-section" onclick="toggleNavGroup('nav-sales')">
+                    <span>Sales</span>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
                 </li>
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('sales-orders.index') }}" class="nav-link {{ request()->routeIs('sales-orders.*') ? 'active' : '' }}">
-                        <i class="fas fa-shopping-cart"></i> Sales Orders
-                    </a>
-                </li>
+                <ul class="nav-group" id="nav-sales">
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
+                            <i class="fas fa-users"></i> Customers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('sales-orders.index') }}" class="nav-link {{ request()->routeIs('sales-orders.*') ? 'active' : '' }}">
+                            <i class="fas fa-shopping-cart"></i> Sales Orders
+                        </a>
+                    </li>
+                </ul>
                 @endrole
 
+                {{-- Warehouse Menu --}}
                 @role('owner|admin|warehouse')
-                <li class="nav-section">Warehouse</li>
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('batches.index') }}" class="nav-link {{ request()->routeIs('batches.*') ? 'active' : '' }}">
-                        <i class="fas fa-tags"></i> Batches
-                    </a>
+                <li class="nav-section" onclick="toggleNavGroup('nav-warehouse')">
+                    <span>Warehouse</span>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
                 </li>
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}">
-                        <i class="fas fa-building"></i> Warehouses
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('stock-opname.index') }}" class="nav-link {{ request()->routeIs('stock-opname.*') ? 'active' : '' }}">
-                        <i class="fas fa-clipboard-check"></i> Stock Opname
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('bin-locations.index') }}" class="nav-link {{ request()->routeIs('bin-locations.*') ? 'active' : '' }}">
-                        <i class="fas fa-map-marker-alt"></i> Bin Locations
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('settings.scanner') }}" class="nav-link {{ request()->routeIs('settings.scanner') ? 'active' : '' }}">
-                        <i class="fas fa-barcode"></i> Scanner Settings
-                    </a>
-                </li>
+                <ul class="nav-group" id="nav-warehouse">
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('batches.index') }}" class="nav-link {{ request()->routeIs('batches.*') ? 'active' : '' }}">
+                            <i class="fas fa-tags"></i> Batches
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}">
+                            <i class="fas fa-building"></i> Warehouses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('stock-opname.index') }}" class="nav-link {{ request()->routeIs('stock-opname.*') ? 'active' : '' }}">
+                            <i class="fas fa-clipboard-check"></i> Stock Opname
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('bin-locations.index') }}" class="nav-link {{ request()->routeIs('bin-locations.*') ? 'active' : '' }}">
+                            <i class="fas fa-map-marker-alt"></i> Bin Locations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('settings.scanner') }}" class="nav-link {{ request()->routeIs('settings.scanner') ? 'active' : '' }}">
+                            <i class="fas fa-barcode"></i> Scanner Settings
+                        </a>
+                    </li>
+                </ul>
                 @endrole
 
-                @role('owner|admin|manager')
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('approvals.index') }}" class="nav-link {{ request()->routeIs('approvals.*') ? 'active' : '' }}">
-                        <i class="fas fa-check-circle"></i> Approvals
-                    </a>
+                {{-- Management Menu --}}
+                @role('owner|admin|manager|warehouse|purchasing')
+                <li class="nav-section" onclick="toggleNavGroup('nav-management')">
+                    <span>Management</span>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
                 </li>
-                @endrole
+                <ul class="nav-group" id="nav-management">
+                    @role('owner|admin|manager')
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('approvals.index') }}" class="nav-link {{ request()->routeIs('approvals.*') ? 'active' : '' }}">
+                            <i class="fas fa-check-circle"></i> Approvals
+                        </a>
+                    </li>
+                    @endrole
 
-                @role('owner|admin|warehouse|purchasing|manager')
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                        <i class="fas fa-chart-bar"></i> Reports
-                    </a>
-                </li>
-                @endrole
+                    @role('owner|admin|warehouse|purchasing|manager')
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                            <i class="fas fa-chart-bar"></i> Reports
+                        </a>
+                    </li>
+                    @endrole
 
-                @role('owner|admin')
-                <li class="nav-item">
-                    <a wire:navigate href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                        <i class="fas fa-user-cog"></i> Users
-                    </a>
-                </li>
+                    @role('owner|admin')
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                            <i class="fas fa-user-cog"></i> Users
+                        </a>
+                    </li>
+                    @endrole
+                </ul>
                 @endrole
             </ul>
         </aside>
@@ -1195,6 +1266,37 @@
             sidebar.classList.toggle('open');
             overlay.classList.toggle('active');
         }
+
+        // Toggle Nav Group Collapse
+        function toggleNavGroup(groupId) {
+            const group = document.getElementById(groupId);
+            const section = document.querySelector(`[onclick="toggleNavGroup('${groupId}')"]`);
+
+            if (group && section) {
+                group.classList.toggle('collapsed');
+                section.classList.toggle('collapsed');
+
+                // Save collapse state to localStorage
+                const isCollapsed = group.classList.contains('collapsed');
+                localStorage.setItem(`nav_${groupId}_collapsed`, isCollapsed);
+            }
+        }
+
+        // Restore collapse state on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const groups = ['nav-main', 'nav-sales', 'nav-warehouse', 'nav-management'];
+            groups.forEach(groupId => {
+                const isCollapsed = localStorage.getItem(`nav_${groupId}_collapsed`) === 'true';
+                if (isCollapsed) {
+                    const group = document.getElementById(groupId);
+                    const section = document.querySelector(`[onclick="toggleNavGroup('${groupId}')"]`);
+                    if (group && section) {
+                        group.classList.add('collapsed');
+                        section.classList.add('collapsed');
+                    }
+                }
+            });
+        });
 
         // Close sidebar when clicking on a link (mobile)
         document.querySelectorAll('.nav-link').forEach(link => {
