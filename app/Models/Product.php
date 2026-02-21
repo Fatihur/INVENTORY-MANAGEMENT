@@ -13,25 +13,34 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'code',
         'sku',
         'name',
         'description',
         'unit',
         'category',
+        'cost_price',
+        'selling_price',
         'min_stock',
+        'max_stock',
         'safety_stock',
         'target_stock',
         'lead_time_days',
         'track_batch',
+        'track_serial',
         'is_active',
     ];
 
     protected $casts = [
+        'cost_price' => 'decimal:2',
+        'selling_price' => 'decimal:2',
         'min_stock' => 'integer',
+        'max_stock' => 'integer',
         'safety_stock' => 'integer',
         'target_stock' => 'integer',
         'lead_time_days' => 'integer',
         'track_batch' => 'boolean',
+        'track_serial' => 'boolean',
         'is_active' => 'boolean',
     ];
 
@@ -50,6 +59,11 @@ class Product extends Model
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    public function batches(): HasMany
+    {
+        return $this->hasMany(Batch::class);
     }
 
     public function suppliers(): BelongsToMany
@@ -101,6 +115,15 @@ class Product extends Model
     {
         return $query->whereDoesntHave('stocks', function ($q) {
             $q->where('qty_on_hand', '>', 0);
+        });
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $product): void {
+            if (empty($product->code) && ! empty($product->sku)) {
+                $product->code = $product->sku;
+            }
         });
     }
 }

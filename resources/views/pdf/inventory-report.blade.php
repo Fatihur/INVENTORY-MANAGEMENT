@@ -53,7 +53,7 @@
             @php $no = 1; @endphp
             @forelse($products ?? [] as $product)
             @php
-                $totalQty = $product->stocks->sum('qty') ?? 0;
+                $totalQty = $product->stocks->sum('qty_on_hand') ?? 0;
                 $minStock = $product->min_stock ?? 0;
                 $statusClass = '';
                 $statusText = 'OK';
@@ -67,9 +67,9 @@
             @endphp
             <tr class="{{ $statusClass }}">
                 <td>{{ $no++ }}</td>
-                <td>{{ $product->code }}</td>
+                <td>{{ $product->sku }}</td>
                 <td>{{ $product->name }}</td>
-                <td>{{ $product->category->name ?? 'N/A' }}</td>
+                <td>{{ $product->category ?? 'N/A' }}</td>
                 <td>{{ $product->unit }}</td>
                 <td class="text-right">{{ $totalQty }}</td>
                 <td class="text-right">{{ $minStock }}</td>

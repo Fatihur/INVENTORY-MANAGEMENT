@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class SalesOrder extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'so_number',
@@ -27,6 +27,10 @@ class SalesOrder extends Model
         'created_by',
         'approved_by',
         'approved_at',
+        'confirmed_at',
+        'shipped_at',
+        'tracking_number',
+        'cancelled_at',
     ];
 
     protected $casts = [
@@ -37,6 +41,9 @@ class SalesOrder extends Model
         'discount_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'approved_at' => 'datetime',
+        'confirmed_at' => 'datetime',
+        'shipped_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -44,7 +51,7 @@ class SalesOrder extends Model
         return LogOptions::defaults()
             ->logOnly(['status', 'total_amount', 'approved_by'])
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Sales Order {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Sales Order {$eventName}");
     }
 
     public function customer()
@@ -87,7 +94,7 @@ class SalesOrder extends Model
         parent::boot();
 
         static::creating(function ($order) {
-            if (!$order->so_number) {
+            if (! $order->so_number) {
                 $prefix = 'SO';
                 $year = date('Y');
                 $lastOrder = static::where('so_number', 'like', "{$prefix}-{$year}%")
@@ -96,9 +103,9 @@ class SalesOrder extends Model
 
                 if ($lastOrder) {
                     $lastNumber = (int) substr($lastOrder->so_number, -6);
-                    $order->so_number = $prefix . '-' . $year . '-' . str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                    $order->so_number = $prefix.'-'.$year.'-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
                 } else {
-                    $order->so_number = $prefix . '-' . $year . '-000001';
+                    $order->so_number = $prefix.'-'.$year.'-000001';
                 }
             }
         });

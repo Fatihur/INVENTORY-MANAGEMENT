@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Product;
 use App\Models\Batch;
+use App\Models\Product;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class NotificationService
@@ -11,7 +12,7 @@ class NotificationService
     public function sendLowStockAlert(Product $product)
     {
         $minStock = $product->min_stock ?? 0;
-        $currentStock = $product->stocks->sum('qty') ?? 0;
+        $currentStock = $product->stocks->sum('qty_on_hand') ?? 0;
 
         if ($currentStock <= $minStock) {
             // Log notification to database or send email
@@ -30,7 +31,7 @@ class NotificationService
     {
         // Store notification in database or send email
         // For now, we'll log it - you can integrate with email/SMS later
-        \Log::info("NOTIFICATION: {$subject} - {$message}");
+        Log::info("NOTIFICATION: {$subject} - {$message}");
 
         // You can add email sending here:
         // Mail::raw($message, function ($mail) use ($subject) {

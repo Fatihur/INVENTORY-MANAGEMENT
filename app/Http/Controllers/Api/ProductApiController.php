@@ -11,24 +11,24 @@ class ProductApiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'stocks']);
+        $query = Product::with(['stocks.warehouse', 'batches']);
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%");
             });
         }
 
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->category_id);
+        if ($request->filled('category')) {
+            $query->where('category', $request->string('category'));
         }
 
         if ($request->has('low_stock')) {
             $query->whereColumn('min_stock', '>', (
-                DB::table('stocks')->selectRaw('COALESCE(SUM(qty), 0)')
+                DB::table('stocks')->selectRaw('COALESCE(SUM(qty_on_hand), 0)')
                     ->whereColumn('stocks.product_id', 'products.id')
             ));
         }
@@ -37,7 +37,7 @@ class ProductApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $products
+            'data' => $products,
         ]);
     }
 
@@ -45,7 +45,7 @@ class ProductApiController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => $product->load(['category', 'stocks.warehouse', 'batches'])
+            'data' => $product->load(['stocks.warehouse', 'batches']),
         ]);
     }
 
@@ -53,26 +53,31 @@ class ProductApiController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|unique:products,code',
-            'sku' => 'nullable|string|unique:products,sku',
-            'category_id' => 'nullable|exists:categories,id',
+            'code' => 'nullable|string|max:50|unique:products,code',
+            'sku' => 'required|string|max:50|unique:products,sku',
+            'category' => 'nullable|string|max:50',
             'description' => 'nullable|string',
-            'unit' => 'required|string|max:50',
+            'unit' => 'required|string|max:20',
             'cost_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'min_stock' => 'nullable|integer|min:0',
             'max_stock' => 'nullable|integer|min:0',
+            'safety_stock' => 'nullable|integer|min:0',
+            'target_stock' => 'nullable|integer|min:0',
+            'lead_time_days' => 'nullable|integer|min:1',
             'track_batch' => 'boolean',
             'track_serial' => 'boolean',
             'is_active' => 'boolean',
         ]);
+
+        $validated['code'] = $validated['code'] ?? $validated['sku'];
 
         $product = Product::create($validated);
 
         return response()->json([
             'success' => true,
             'data' => $product,
-            'message' => 'Product created successfully'
+            'message' => 'Product created successfully',
         ], 201);
     }
 
@@ -80,26 +85,33 @@ class ProductApiController extends Controller
     {
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'code' => 'nullable|string|unique:products,code,' . $product->id,
-            'sku' => 'nullable|string|unique:products,sku,' . $product->id,
-            'category_id' => 'nullable|exists:categories,id',
+            'code' => 'nullable|string|max:50|unique:products,code,'.$product->id,
+            'sku' => 'sometimes|required|string|max:50|unique:products,sku,'.$product->id,
+            'category' => 'nullable|string|max:50',
             'description' => 'nullable|string',
-            'unit' => 'sometimes|required|string|max:50',
+            'unit' => 'sometimes|required|string|max:20',
             'cost_price' => 'sometimes|required|numeric|min:0',
             'selling_price' => 'sometimes|required|numeric|min:0',
             'min_stock' => 'nullable|integer|min:0',
             'max_stock' => 'nullable|integer|min:0',
+            'safety_stock' => 'nullable|integer|min:0',
+            'target_stock' => 'nullable|integer|min:0',
+            'lead_time_days' => 'nullable|integer|min:1',
             'track_batch' => 'boolean',
             'track_serial' => 'boolean',
             'is_active' => 'boolean',
         ]);
+
+        if (! array_key_exists('code', $validated) && array_key_exists('sku', $validated)) {
+            $validated['code'] = $validated['sku'];
+        }
 
         $product->update($validated);
 
         return response()->json([
             'success' => true,
             'data' => $product,
-            'message' => 'Product updated successfully'
+            'message' => 'Product updated successfully',
         ]);
     }
 
@@ -109,7 +121,7 @@ class ProductApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Product deleted successfully'
+            'message' => 'Product deleted successfully',
         ]);
     }
 }

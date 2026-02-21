@@ -4,25 +4,25 @@
         <div class="panel stat-card">
             <div class="panel-body" style="padding: 15px;">
                 <div style="font-size: 11px; color: #7f8c8d;">Total Products</div>
-                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #2c3e50;">{{ \App\Models\Product::count() }}</div>
+                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #2c3e50;">{{ $stats['total_products'] }}</div>
             </div>
         </div>
         <div class="panel stat-card">
             <div class="panel-body" style="padding: 15px;">
                 <div style="font-size: 11px; color: #7f8c8d;">Low Stock</div>
-                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #f39c12;">{{ \App\Models\Product::lowStock()->count() }}</div>
+                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #f39c12;">{{ $stats['low_stock'] }}</div>
             </div>
         </div>
         <div class="panel stat-card">
             <div class="panel-body" style="padding: 15px;">
                 <div style="font-size: 11px; color: #7f8c8d;">Out of Stock</div>
-                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #e74c3c;">{{ \App\Models\Product::outOfStock()->count() }}</div>
+                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #e74c3c;">{{ $stats['out_of_stock'] }}</div>
             </div>
         </div>
         <div class="panel stat-card">
             <div class="panel-body" style="padding: 15px;">
                 <div style="font-size: 11px; color: #7f8c8d;">Pending POs</div>
-                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #3498db;">{{ \App\Models\PurchaseOrder::whereIn('status', ['draft', 'sent', 'approved'])->count() }}</div>
+                <div class="text-2xl" style="font-size: 24px; font-weight: bold; color: #3498db;">{{ $stats['pending_pos'] }}</div>
             </div>
         </div>
     </div>
@@ -62,15 +62,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse(\App\Models\StockMovement::with(['product', 'warehouse'])->latest()->take(5)->get() as $movement)
+                            @forelse($recentMovements as $movement)
                                 <tr>
-                                    <td>{{ $movement->product->name }}</td>
+                                    <td>{{ $movement->product?->name ?? '-' }}</td>
                                     <td>
                                         <span class="badge badge-{{ $movement->type === 'in' ? 'success' : ($movement->type === 'out' ? 'danger' : 'info') }}">
                                             {{ strtoupper($movement->type) }}
                                         </span>
                                     </td>
-                                    <td>{{ $movement->quantity }}</td>
+                                    <td>{{ $movement->qty }}</td>
                                     <td>{{ $movement->created_at->diffForHumans() }}</td>
                                 </tr>
                             @empty

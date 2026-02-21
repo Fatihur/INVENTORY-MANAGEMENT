@@ -35,8 +35,8 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
                 'name' => $product->name,
                 'category' => $product->category,
                 'stock_qty' => $stockQty,
-                'purchase_price' => $product->purchase_price ?? $product->cost_price ?? 0,
-                'stock_value' => $stockQty * ($product->purchase_price ?? $product->cost_price ?? 0),
+                'purchase_price' => $product->cost_price ?? 0,
+                'stock_value' => $stockQty * ($product->cost_price ?? 0),
                 'min_stock' => $product->min_stock,
                 'status' => $stockQty == 0 ? 'Out of Stock' : ($stockQty <= $product->min_stock ? 'Low Stock' : 'OK'),
             ];

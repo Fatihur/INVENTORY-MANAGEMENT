@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Batch;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\SalesOrder;
-use App\Models\PurchaseOrder;
-use App\Models\Stock;
 use App\Models\Warehouse;
-use App\Models\Batch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -38,7 +36,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $stats
+            'data' => $stats,
         ]);
     }
 
@@ -56,7 +54,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $salesTrend
+            'data' => $salesTrend,
         ]);
     }
 
@@ -68,15 +66,15 @@ class DashboardController extends Controller
             ->join('products', 'sales_order_items.product_id', '=', 'products.id')
             ->join('sales_orders', 'sales_order_items.sales_order_id', '=', 'sales_orders.id')
             ->where('sales_orders.status', 'completed')
-            ->selectRaw('products.id, products.name, products.code, SUM(sales_order_items.quantity) as total_sold')
-            ->groupBy('products.id', 'products.name', 'products.code')
+            ->selectRaw('products.id, products.name, products.sku, SUM(sales_order_items.quantity) as total_sold')
+            ->groupBy('products.id', 'products.name', 'products.sku')
             ->orderByDesc('total_sold')
             ->limit($limit)
             ->get();
 
         return response()->json([
             'success' => true,
-            'data' => $topProducts
+            'data' => $topProducts,
         ]);
     }
 
@@ -85,15 +83,15 @@ class DashboardController extends Controller
         $stockLevels = DB::table('products')
             ->leftJoin('stocks', 'products.id', '=', 'stocks.product_id')
             ->leftJoin('warehouses', 'stocks.warehouse_id', '=', 'warehouses.id')
-            ->selectRaw('products.id, products.name, products.code, products.min_stock, 
+            ->selectRaw('products.id, products.name, products.sku, products.min_stock, 
                         COALESCE(SUM(stocks.qty_on_hand), 0) as total_qty,
                         GROUP_CONCAT(warehouses.name) as warehouses')
-            ->groupBy('products.id', 'products.name', 'products.code', 'products.min_stock')
+            ->groupBy('products.id', 'products.name', 'products.sku', 'products.min_stock')
             ->get();
 
         return response()->json([
             'success' => true,
-            'data' => $stockLevels
+            'data' => $stockLevels,
         ]);
     }
 
@@ -106,7 +104,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $recentOrders
+            'data' => $recentOrders,
         ]);
     }
 
@@ -114,12 +112,12 @@ class DashboardController extends Controller
     {
         $inventoryValue = DB::table('products')
             ->leftJoin('stocks', 'products.id', '=', 'stocks.product_id')
-            ->selectRaw('COALESCE(SUM(stocks.qty_on_hand * products.cost_price), 0) as total_value')
+            ->selectRaw('COALESCE(SUM(stocks.qty_on_hand * COALESCE(stocks.avg_cost, 0)), 0) as total_value')
             ->first();
 
         return response()->json([
             'success' => true,
-            'data' => $inventoryValue
+            'data' => $inventoryValue,
         ]);
     }
 }

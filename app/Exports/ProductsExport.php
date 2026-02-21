@@ -21,10 +21,10 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, WithS
 
     public function collection()
     {
-        $query = Product::with(['category', 'stocks.warehouse']);
+        $query = Product::with(['stocks.warehouse']);
 
-        if (isset($this->filters['category_id'])) {
-            $query->where('category_id', $this->filters['category_id']);
+        if (! empty($this->filters['category'])) {
+            $query->where('category', $this->filters['category']);
         }
 
         if (isset($this->filters['is_active'])) {
@@ -61,12 +61,12 @@ class ProductsExport implements FromCollection, WithHeadings, WithMapping, WithS
             $product->code,
             $product->name,
             $product->sku,
-            $product->category?->name ?? 'N/A',
+            $product->category ?? 'N/A',
             $product->unit,
             $product->cost_price,
             $product->selling_price,
             $product->min_stock,
-            $product->stocks->sum('qty'),
+            $product->stocks->sum('qty_on_hand'),
             $product->track_batch ? 'Yes' : 'No',
             $product->track_serial ? 'Yes' : 'No',
             $product->is_active ? 'Active' : 'Inactive',

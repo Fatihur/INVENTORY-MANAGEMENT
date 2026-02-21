@@ -3,29 +3,34 @@
 namespace App\Imports;
 
 use App\Models\Product;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Illuminate\Support\Str;
 
 class ProductsImport implements ToModel, WithHeadingRow, WithValidation
 {
     public function model(array $row)
     {
+        $sku = $row['sku'] ?? $this->generateSku($row['name']);
+
         return new Product([
             'name' => $row['name'],
-            'code' => $row['code'] ?? $this->generateCode($row['name']),
-            'sku' => $row['sku'] ?? null,
-            'category_id' => $row['category_id'] ?? null,
+            'code' => $row['code'] ?? $sku,
+            'sku' => $sku,
+            'category' => $row['category'] ?? null,
             'description' => $row['description'] ?? null,
             'unit' => $row['unit'] ?? 'pcs',
             'cost_price' => $row['cost_price'] ?? 0,
             'selling_price' => $row['selling_price'] ?? 0,
             'min_stock' => $row['min_stock'] ?? 0,
             'max_stock' => $row['max_stock'] ?? 0,
+            'safety_stock' => $row['safety_stock'] ?? 0,
+            'target_stock' => $row['target_stock'] ?? null,
+            'lead_time_days' => $row['lead_time_days'] ?? 7,
             'track_batch' => isset($row['track_batch']) && strtolower($row['track_batch']) === 'yes',
             'track_serial' => isset($row['track_serial']) && strtolower($row['track_serial']) === 'yes',
-            'is_active' => !isset($row['is_active']) || strtolower($row['is_active']) !== 'no',
+            'is_active' => ! isset($row['is_active']) || strtolower($row['is_active']) !== 'no',
         ]);
     }
 
@@ -33,11 +38,11 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation
     {
         return [
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:255|unique:products,code',
-            'sku' => 'nullable|string|max:255|unique:products,sku',
+            'code' => 'nullable|string|max:50|unique:products,code',
+            'sku' => 'nullable|string|max:50|unique:products,sku',
             'cost_price' => 'nullable|numeric|min:0',
             'selling_price' => 'nullable|numeric|min:0',
-            'unit' => 'nullable|string|max:50',
+            'unit' => 'nullable|string|max:20',
         ];
     }
 
@@ -50,18 +55,23 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation
         ];
     }
 
-    protected function generateCode(string $name): string
+    protected function generateSku(string $name): string
     {
-        $prefix = 'PROD';
-        $lastProduct = Product::where('code', 'like', "{$prefix}%")
-            ->orderBy('code', 'desc')
+        $prefix = Str::upper(Str::substr(Str::slug($name, ''), 0, 4));
+        if ($prefix === '') {
+            $prefix = 'PROD';
+        }
+
+        $lastProduct = Product::where('sku', 'like', "{$prefix}%")
+            ->orderBy('sku', 'desc')
             ->first();
 
         if ($lastProduct) {
-            $lastNumber = (int) substr($lastProduct->code, strlen($prefix));
-            return $prefix . str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
+            $lastNumber = (int) preg_replace('/\D/', '', $lastProduct->sku);
+
+            return $prefix.str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
         }
 
-        return $prefix . '00001';
+        return $prefix.'00001';
     }
 }

@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class StockOpname extends Model
 {
@@ -25,6 +25,9 @@ class StockOpname extends Model
         'created_by',
         'approved_by',
         'completed_at',
+        'completed_by',
+        'cancelled_at',
+        'cancelled_by',
     ];
 
     protected $casts = [
@@ -32,6 +35,7 @@ class StockOpname extends Model
         'actual_qty' => 'integer',
         'variance_qty' => 'integer',
         'completed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -39,7 +43,7 @@ class StockOpname extends Model
         return LogOptions::defaults()
             ->logOnly(['status', 'variance_qty', 'approved_by'])
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Stock Opname {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Stock Opname {$eventName}");
     }
 
     public function warehouse()
@@ -72,12 +76,22 @@ class StockOpname extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function completer()
+    {
+        return $this->belongsTo(User::class, 'completed_by');
+    }
+
+    public function canceller()
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
+    }
+
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($opname) {
-            if (!$opname->opname_number) {
+            if (! $opname->opname_number) {
                 $prefix = 'OP';
                 $year = date('Y');
                 $lastOpname = static::where('opname_number', 'like', "{$prefix}-{$year}%")
@@ -86,9 +100,9 @@ class StockOpname extends Model
 
                 if ($lastOpname) {
                     $lastNumber = (int) substr($lastOpname->opname_number, -6);
-                    $opname->opname_number = $prefix . '-' . $year . '-' . str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                    $opname->opname_number = $prefix.'-'.$year.'-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
                 } else {
-                    $opname->opname_number = $prefix . '-' . $year . '-000001';
+                    $opname->opname_number = $prefix.'-'.$year.'-000001';
                 }
             }
 

@@ -29,7 +29,7 @@ class ReportList extends Component
 
     public $productFilter = 'all';
 
-    public $category_id = '';
+    public $category = '';
 
     public $exportFormat = 'excel';
 
@@ -97,8 +97,8 @@ class ReportList extends Component
                 'name' => $product->name,
                 'category' => $product->category,
                 'stock_qty' => $stockQty,
-                'purchase_price' => $product->purchase_price ?? $product->cost_price ?? 0,
-                'stock_value' => $stockQty * ($product->purchase_price ?? $product->cost_price ?? 0),
+                'purchase_price' => $product->cost_price ?? 0,
+                'stock_value' => $stockQty * ($product->cost_price ?? 0),
                 'min_stock' => $product->min_stock,
             ];
         });
@@ -191,18 +191,14 @@ class ReportList extends Component
         foreach ($movements->groupBy('type') as $type => $group) {
             $movementsByType[$type] = [
                 'count' => $group->count(),
-                'total_qty' => $group->sum('quantity'),
+                'total_qty' => $group->sum('qty'),
             ];
         }
 
         return [
             'total_movements' => $movements->count(),
             'movements_by_type' => $movementsByType,
-            'movements' => $movements->map(function ($m) {
-                $m->qty = $m->quantity;
-
-                return $m;
-            }),
+            'movements' => $movements,
         ];
     }
 
@@ -229,7 +225,7 @@ class ReportList extends Component
             });
 
         $totalShortageValue = $products->sum(function ($p) {
-            return $p->shortage * ($p->purchase_price ?? 0);
+            return $p->shortage * ($p->cost_price ?? 0);
         });
 
         return [
