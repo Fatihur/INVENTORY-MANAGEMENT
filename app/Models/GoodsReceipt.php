@@ -16,6 +16,7 @@ class GoodsReceipt extends Model
         'gr_number',
         'purchase_order_id',
         'supplier_id',
+        'warehouse_id',
         'received_date',
         'invoice_number',
         'invoice_date',
@@ -43,6 +44,11 @@ class GoodsReceipt extends Model
         return $this->belongsTo(User::class, 'received_by');
     }
 
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(GoodsReceiptItem::class);
@@ -65,13 +71,13 @@ class GoodsReceipt extends Model
     protected static function generateUniqueGrNumber(): string
     {
         $year = now()->format('Y');
-        $prefix = 'GR-' . $year . '-';
+        $prefix = 'GR-'.$year.'-';
 
         // Use a transaction with lock to prevent duplicate numbers
-        return \DB::transaction(function () use ($prefix, $year) {
+        return \DB::transaction(function () use ($prefix) {
             // Get the latest GR number for this year (including soft deleted)
             $latest = static::withTrashed()
-                ->where('gr_number', 'like', $prefix . '%')
+                ->where('gr_number', 'like', $prefix.'%')
                 ->orderBy('gr_number', 'desc')
                 ->lockForUpdate()
                 ->first();
@@ -90,10 +96,10 @@ class GoodsReceipt extends Model
             $attempt = 0;
 
             do {
-                $grNumber = $prefix . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
+                $grNumber = $prefix.str_pad($newNumber, 5, '0', STR_PAD_LEFT);
                 $exists = static::withTrashed()->where('gr_number', $grNumber)->exists();
 
-                if (!$exists) {
+                if (! $exists) {
                     return $grNumber;
                 }
 
@@ -102,7 +108,7 @@ class GoodsReceipt extends Model
             } while ($attempt < $maxAttempts);
 
             // Fallback to timestamp-based number if all else fails
-            return $prefix . str_pad(now()->format('Hisu'), 9, '0', STR_PAD_LEFT);
+            return $prefix.str_pad(now()->format('Hisu'), 9, '0', STR_PAD_LEFT);
         });
     }
 }

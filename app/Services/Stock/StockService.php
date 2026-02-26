@@ -77,13 +77,16 @@ class StockService implements StockServiceInterface
                 ->where(['product_id' => $productId, 'warehouse_id' => $warehouseId])
                 ->first();
 
-            if (!$stock) {
+            if (! $stock) {
                 throw new \InvalidArgumentException('Stock not found for product in this warehouse');
             }
 
-            if ($stock->qty_on_hand < $qty) {
+            // Check available quantity (excluding reserved)
+            $availableQty = $stock->qty_on_hand - $stock->qty_reserved;
+
+            if ($availableQty < $qty) {
                 throw new \InvalidArgumentException(
-                    sprintf('Insufficient stock. Available: %d, Requested: %d', $stock->qty_on_hand, $qty)
+                    sprintf('Insufficient available stock. Available: %d, Reserved: %d, Requested: %d', $availableQty, $stock->qty_reserved, $qty)
                 );
             }
 
@@ -180,7 +183,7 @@ class StockService implements StockServiceInterface
                     ->where(['product_id' => $productId, 'warehouse_id' => $warehouseId])
                     ->first();
 
-                if (!$stock) {
+                if (! $stock) {
                     // Create placeholder for missing stock
                     $stock = Stock::make([
                         'product_id' => $productId,
@@ -196,7 +199,7 @@ class StockService implements StockServiceInterface
             $fromStock = $stocks[$fromWarehouseId];
             $toStock = $stocks[$toWarehouseId];
 
-            if (!$fromStock->exists) {
+            if (! $fromStock->exists) {
                 throw new \InvalidArgumentException('Source stock not found');
             }
 
@@ -290,7 +293,15 @@ class StockService implements StockServiceInterface
     public function checkAvailability(int $productId, int $warehouseId, int $requiredQty): bool
     {
         $stock = Stock::where(['product_id' => $productId, 'warehouse_id' => $warehouseId])->first();
-        return $stock && $stock->qty_on_hand >= $requiredQty;
+
+        if (! $stock) {
+            return false;
+        }
+
+        // Check against available quantity (on hand minus reserved)
+        $availableQty = $stock->qty_on_hand - $stock->qty_reserved;
+
+        return $availableQty >= $requiredQty;
     }
 
     /**
@@ -299,6 +310,7 @@ class StockService implements StockServiceInterface
     public function getAvailableQty(int $productId, int $warehouseId): int
     {
         $stock = Stock::where(['product_id' => $productId, 'warehouse_id' => $warehouseId])->first();
+
         return $stock ? $stock->qty_on_hand : 0;
     }
 }

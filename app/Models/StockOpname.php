@@ -92,18 +92,7 @@ class StockOpname extends Model
 
         static::creating(function ($opname) {
             if (! $opname->opname_number) {
-                $prefix = 'OP';
-                $year = date('Y');
-                $lastOpname = static::where('opname_number', 'like', "{$prefix}-{$year}%")
-                    ->orderBy('opname_number', 'desc')
-                    ->first();
-
-                if ($lastOpname) {
-                    $lastNumber = (int) substr($lastOpname->opname_number, -6);
-                    $opname->opname_number = $prefix.'-'.$year.'-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
-                } else {
-                    $opname->opname_number = $prefix.'-'.$year.'-000001';
-                }
+                $opname->opname_number = static::generateUniqueOpnameNumber();
             }
 
             $opname->variance_qty = $opname->actual_qty - $opname->system_qty;
@@ -111,6 +100,53 @@ class StockOpname extends Model
 
         static::updating(function ($opname) {
             $opname->variance_qty = $opname->actual_qty - $opname->system_qty;
+        });
+    }
+
+    /**
+     * Generate a unique opname number with race condition protection.
+     */
+    protected static function generateUniqueOpnameNumber(): string
+    {
+        $prefix = config('inventory.prefixes.stock_opname', 'OP');
+        $year = now()->format('Y');
+        $prefixWithYear = "{$prefix}-{$year}-";
+
+        // Use a transaction with lock to prevent duplicate numbers
+        return \DB::transaction(function () use ($prefixWithYear) {
+            // Get the latest opname number for this year (including soft deleted)
+            $latest = static::withTrashed()
+                ->where('opname_number', 'like', "{$prefixWithYear}%")
+                ->orderBy('opname_number', 'desc')
+                ->lockForUpdate()
+                ->first();
+
+            if ($latest) {
+                // Extract the number part and increment
+                $lastNumber = (int) substr($latest->opname_number, -6);
+                $newNumber = $lastNumber + 1;
+            } else {
+                $newNumber = 1;
+            }
+
+            // Double-check uniqueness (in case of race condition)
+            $maxAttempts = 10;
+            $attempt = 0;
+
+            do {
+                $opnameNumber = $prefixWithYear.str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+                $exists = static::withTrashed()->where('opname_number', $opnameNumber)->exists();
+
+                if (! $exists) {
+                    return $opnameNumber;
+                }
+
+                $newNumber++;
+                $attempt++;
+            } while ($attempt < $maxAttempts);
+
+            // Fallback to timestamp-based number if all else fails
+            return $prefixWithYear.str_pad(now()->format('Hisu'), 9, '0', STR_PAD_LEFT);
         });
     }
 }

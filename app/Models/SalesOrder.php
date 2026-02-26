@@ -95,19 +95,55 @@ class SalesOrder extends Model
 
         static::creating(function ($order) {
             if (! $order->so_number) {
-                $prefix = 'SO';
-                $year = date('Y');
-                $lastOrder = static::where('so_number', 'like', "{$prefix}-{$year}%")
-                    ->orderBy('so_number', 'desc')
-                    ->first();
-
-                if ($lastOrder) {
-                    $lastNumber = (int) substr($lastOrder->so_number, -6);
-                    $order->so_number = $prefix.'-'.$year.'-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
-                } else {
-                    $order->so_number = $prefix.'-'.$year.'-000001';
-                }
+                $order->so_number = static::generateUniqueSoNumber();
             }
+        });
+    }
+
+    /**
+     * Generate a unique SO number with race condition protection.
+     */
+    protected static function generateUniqueSoNumber(): string
+    {
+        $prefix = config('inventory.prefixes.sales_order', 'SO');
+        $year = now()->format('Y');
+        $prefixWithYear = "{$prefix}-{$year}-";
+
+        // Use a transaction with lock to prevent duplicate numbers
+        return \DB::transaction(function () use ($prefixWithYear) {
+            // Get the latest SO number for this year (including soft deleted)
+            $latest = static::withTrashed()
+                ->where('so_number', 'like', "{$prefixWithYear}%")
+                ->orderBy('so_number', 'desc')
+                ->lockForUpdate()
+                ->first();
+
+            if ($latest) {
+                // Extract the number part and increment
+                $lastNumber = (int) substr($latest->so_number, -6);
+                $newNumber = $lastNumber + 1;
+            } else {
+                $newNumber = 1;
+            }
+
+            // Double-check uniqueness (in case of race condition)
+            $maxAttempts = 10;
+            $attempt = 0;
+
+            do {
+                $soNumber = $prefixWithYear.str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+                $exists = static::withTrashed()->where('so_number', $soNumber)->exists();
+
+                if (! $exists) {
+                    return $soNumber;
+                }
+
+                $newNumber++;
+                $attempt++;
+            } while ($attempt < $maxAttempts);
+
+            // Fallback to timestamp-based number if all else fails
+            return $prefixWithYear.str_pad(now()->format('Hisu'), 9, '0', STR_PAD_LEFT);
         });
     }
 

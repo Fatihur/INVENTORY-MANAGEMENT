@@ -73,7 +73,11 @@ class Product extends Model
             ->withTimestamps();
     }
 
-    public function primarySupplier(): ?Supplier
+    /**
+     * Get the primary supplier for this product.
+     * Note: This is not a relationship method, use after loading suppliers relation.
+     */
+    public function getPrimarySupplier(): ?Supplier
     {
         return $this->suppliers
             ->first(fn ($s) => $s->pivot->is_primary);

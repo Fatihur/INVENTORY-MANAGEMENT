@@ -6,8 +6,6 @@ use App\Contracts\Repositories\PurchaseOrderRepositoryInterface;
 use App\Contracts\Services\PurchaseOrderServiceInterface;
 use App\Models\Batch;
 use App\Models\GoodsReceipt;
-use App\Models\GoodsReceiptItem;
-use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\Stock;
 use App\Models\StockMovement;
@@ -27,7 +25,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
         $createdPOs = collect();
 
         foreach ($groupedBySupplier as $supplierId => $items) {
-            if (!$supplierId) {
+            if (! $supplierId) {
                 continue;
             }
 
@@ -36,7 +34,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
             foreach ($items as $rec) {
                 $product = $rec->product;
                 $qty = $rec->metrics['recommended_order_qty'] ?? 0;
-                $price = $product->primarySupplier?->pivot?->buy_price ?? 0;
+                $price = $product->getPrimarySupplier()?->pivot?->buy_price ?? 0;
 
                 $po->items()->create([
                     'product_id' => $product->id,
@@ -69,7 +67,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
             // Lock the PO for update to prevent race conditions
             $po = PurchaseOrder::lockForUpdate()->find($poId);
 
-            if (!$po || !$po->canEdit()) {
+            if (! $po || ! $po->canEdit()) {
                 throw new \InvalidArgumentException('PO cannot be submitted');
             }
 
@@ -88,7 +86,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
             // Lock the PO for update to prevent race conditions
             $po = PurchaseOrder::lockForUpdate()->find($poId);
 
-            if (!$po || !$po->canApprove()) {
+            if (! $po || ! $po->canApprove()) {
                 throw new \InvalidArgumentException('PO cannot be approved');
             }
 
@@ -120,7 +118,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
         if ($qtyToReceive > $remainingQty) {
             throw new \InvalidArgumentException(
                 sprintf(
-                    "Cannot receive %d units of %s. Ordered: %d, Already Received: %d, Remaining: %d",
+                    'Cannot receive %d units of %s. Ordered: %d, Already Received: %d, Remaining: %d',
                     $qtyToReceive,
                     $poItem->product->name,
                     $poItem->qty_ordered,
@@ -130,8 +128,16 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
             );
         }
 
+        // Validate batch number is required for batch-tracked products
+        $product = $poItem->product;
+        if ($product->track_batch && empty($item['batch_number'])) {
+            throw new \InvalidArgumentException(
+                "Batch number is required for product {$product->name} (batch-tracked product)"
+            );
+        }
+
         // Validate expiry date if provided
-        if (!empty($item['expiry_date'])) {
+        if (! empty($item['expiry_date'])) {
             $expiryDate = \Carbon\Carbon::parse($item['expiry_date']);
             $today = \Carbon\Carbon::today();
 
@@ -159,7 +165,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
         return DB::transaction(function () use ($poId, $items, $invoiceNumber, $warehouseId, $userId) {
             $po = $this->poRepository->find($poId);
 
-            if (!$po || !$po->canReceive()) {
+            if (! $po || ! $po->canReceive()) {
                 throw new \InvalidArgumentException('PO cannot receive goods');
             }
 
@@ -176,7 +182,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
             foreach ($items as $item) {
                 $poItem = $po->items()->find($item['po_item_id']);
 
-                if (!$poItem) {
+                if (! $poItem) {
                     continue;
                 }
 
@@ -194,7 +200,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
                 ]);
 
                 // Create or update batch record if batch_number provided
-                if (!empty($item['batch_number'])) {
+                if (! empty($item['batch_number'])) {
                     $this->createOrUpdateBatch(
                         $poItem->product_id,
                         $warehouseId,
@@ -283,7 +289,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
             // Lock the PO for update to prevent race conditions
             $po = PurchaseOrder::lockForUpdate()->find($poId);
 
-            if (!$po || $po->status !== 'partial') {
+            if (! $po || $po->status !== 'partial') {
                 throw new \InvalidArgumentException('Only partial POs can be closed');
             }
 
@@ -291,7 +297,7 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
                 'status' => 'closed',
                 'closed_at' => now(),
                 'closed_by' => $userId,
-                'notes' => $po->notes . "\n[Closed by user {$userId} at " . now()->format('Y-m-d H:i:s') . ']',
+                'notes' => $po->notes."\n[Closed by user {$userId} at ".now()->format('Y-m-d H:i:s').']',
             ]);
 
             return $po;
@@ -336,13 +342,15 @@ class PurchaseOrderService implements PurchaseOrderServiceInterface
         // Use database transaction with lock to prevent duplicate numbers
         return DB::transaction(function () {
             $count = GoodsReceipt::whereYear('created_at', now()->year)->lockForUpdate()->count() + 1;
-            return 'GR-' . now()->format('Y') . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
+
+            return 'GR-'.now()->format('Y').'-'.str_pad($count, 5, '0', STR_PAD_LEFT);
         });
     }
 
     private function getStockBefore(int $productId, int $warehouseId): int
     {
         $stock = Stock::where(['product_id' => $productId, 'warehouse_id' => $warehouseId])->first();
+
         return $stock?->qty_on_hand ?? 0;
     }
 

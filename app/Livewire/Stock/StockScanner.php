@@ -11,13 +11,21 @@ use Livewire\Component;
 class StockScanner extends Component
 {
     public string $scanMode = 'view';
+
     public ?string $scannedCode = null;
+
     public ?Product $product = null;
+
     public array $productData = [];
+
     public int $quantity = 1;
+
     public string $notes = '';
+
     public ?int $warehouseId = null;
+
     public string $statusMessage = '';
+
     public string $statusType = '';
 
     public function mount()
@@ -30,8 +38,9 @@ class StockScanner extends Component
         $this->scannedCode = $code;
         $decoded = $qrService->decode($code);
 
-        if (!$decoded) {
+        if (! $decoded) {
             $this->setStatus('Invalid QR code', 'error');
+
             return;
         }
 
@@ -46,12 +55,13 @@ class StockScanner extends Component
             default => null,
         };
 
-        if (!$product) {
+        if (! $product) {
             $this->setStatus('Product not found', 'error');
+
             return;
         }
 
-        if (!$product->is_active) {
+        if (! $product->is_active) {
             $this->setStatus('Warning: Product is discontinued', 'warning');
         }
 
@@ -62,14 +72,15 @@ class StockScanner extends Component
             'total_stock' => $product->total_stock,
             'min_stock' => $product->min_stock,
             'location' => $product->stocks->first()?->warehouse?->code ?? 'N/A',
-            'supplier' => $product->primarySupplier?->name ?? 'N/A',
+            'supplier' => $product->getPrimarySupplier()?->name ?? 'N/A',
         ];
     }
 
     public function processTransaction(StockServiceInterface $stockService)
     {
-        if (!$this->product || !$this->warehouseId) {
+        if (! $this->product || ! $this->warehouseId) {
             $this->setStatus('Invalid product or warehouse', 'error');
+
             return;
         }
 

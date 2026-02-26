@@ -35,7 +35,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
             ->join('stocks', 'products.id', '=', 'stocks.product_id')
             ->whereColumn('stocks.qty_on_hand', '<=', 'products.min_stock')
             ->where('products.is_active', true)
-            ->with(['stocks', 'primarySupplier'])
+            ->with(['stocks', 'suppliers'])
             ->get();
     }
 
@@ -46,7 +46,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
                 $q->where('qty_on_hand', '>', 0);
             })
             ->where('products.is_active', true)
-            ->with(['stocks', 'primarySupplier'])
+            ->with(['stocks', 'suppliers'])
             ->get();
     }
 
@@ -54,11 +54,11 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
     {
         $query = $this->model->with(['stocks.warehouse', 'qrCodes']);
 
-        if (!empty($filters['category'])) {
+        if (! empty($filters['category'])) {
             $query->where('category', $filters['category']);
         }
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             match ($filters['status']) {
                 'low' => $query->lowStock(),
                 'out' => $query->outOfStock(),
@@ -66,10 +66,10 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
             };
         }
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('name', 'like', "%{$filters['search']}%")
-                  ->orWhere('sku', 'like', "%{$filters['search']}%");
+                    ->orWhere('sku', 'like', "%{$filters['search']}%");
             });
         }
 
@@ -80,20 +80,24 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
     {
         $product = $this->find($productId);
 
-        if (!$product) {
+        if (! $product) {
             return [];
         }
+
+        $lookbackDays = config('inventory.stock.adu_lookback_days', 30);
 
         $movements = DB::table('stock_movements')
             ->where('product_id', $productId)
             ->where('type', 'out')
-            ->where('moved_at', '>=', now()->subDays(30))
+            ->where('moved_at', '>=', now()->subDays($lookbackDays))
             ->selectRaw('DATE(moved_at) as date, SUM(ABS(qty)) as total_out')
             ->groupBy('date')
             ->pluck('total_out', 'date');
 
-        $adu = $movements->count() > 0
-            ? round($movements->sum() / 30, 2)
+        // Calculate ADU based on actual days with data, not always 30
+        $daysWithData = $movements->count();
+        $adu = $daysWithData > 0
+            ? round($movements->sum() / $daysWithData, 2)
             : 0;
 
         $currentStock = $product->total_stock;

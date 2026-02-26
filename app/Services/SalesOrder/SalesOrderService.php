@@ -3,11 +3,10 @@
 namespace App\Services\SalesOrder;
 
 use App\Models\SalesOrder;
-use App\Models\SalesOrderItem;
 use App\Models\Stock;
 use App\Models\StockMovement;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SalesOrderService
 {
@@ -18,7 +17,7 @@ class SalesOrderService
     {
         $stock = Stock::where([
             'product_id' => $productId,
-            'warehouse_id' => $warehouseId
+            'warehouse_id' => $warehouseId,
         ])->first();
 
         return $stock ? $stock->qty_on_hand - $stock->qty_reserved : 0;
@@ -31,7 +30,7 @@ class SalesOrderService
     {
         $stock = Stock::where([
             'product_id' => $productId,
-            'warehouse_id' => $warehouseId
+            'warehouse_id' => $warehouseId,
         ])->first();
 
         return $stock ? $stock->qty_on_hand : 0;
@@ -60,7 +59,7 @@ class SalesOrderService
             foreach ($salesOrder->items as $item) {
                 $stock = $stocks->get($item->product_id);
 
-                if (!$stock) {
+                if (! $stock) {
                     throw new \InvalidArgumentException(
                         "No stock found for product {$item->product->name} in warehouse"
                     );
@@ -98,7 +97,7 @@ class SalesOrderService
                 $stock = Stock::lockForUpdate()
                     ->where([
                         'product_id' => $item->product_id,
-                        'warehouse_id' => $warehouseId
+                        'warehouse_id' => $warehouseId,
                     ])
                     ->first();
 
@@ -121,11 +120,11 @@ class SalesOrderService
                 $stock = Stock::lockForUpdate()
                     ->where([
                         'product_id' => $item->product_id,
-                        'warehouse_id' => $warehouseId
+                        'warehouse_id' => $warehouseId,
                     ])
                     ->first();
 
-                if (!$stock) {
+                if (! $stock) {
                     throw new \InvalidArgumentException(
                         "No stock found for product {$item->product->name}"
                     );
@@ -179,6 +178,11 @@ class SalesOrderService
                 throw new \InvalidArgumentException('Only draft orders can be confirmed');
             }
 
+            // Validate warehouse is assigned
+            if (empty($salesOrder->warehouse_id)) {
+                throw new \InvalidArgumentException('Warehouse must be assigned before confirming order');
+            }
+
             // Reserve stock (includes validation within transaction)
             $this->reserveStock($salesOrder);
 
@@ -201,7 +205,7 @@ class SalesOrderService
             // Lock the sales order to prevent concurrent status updates
             $salesOrder = SalesOrder::lockForUpdate()->find($salesOrder->id);
 
-            if (!in_array($salesOrder->status, ['confirmed', 'processing'])) {
+            if (! in_array($salesOrder->status, ['confirmed', 'processing'])) {
                 throw new \InvalidArgumentException('Only confirmed or processing orders can be shipped');
             }
 
@@ -228,8 +232,8 @@ class SalesOrderService
             // Lock the sales order to prevent concurrent status updates
             $salesOrder = SalesOrder::lockForUpdate()->find($salesOrder->id);
 
-            if (!in_array($salesOrder->status, ['draft', 'confirmed', 'processing'])) {
-                throw new \InvalidArgumentException('Cannot cancel order with status: ' . $salesOrder->status);
+            if (! in_array($salesOrder->status, ['draft', 'confirmed', 'processing'])) {
+                throw new \InvalidArgumentException('Cannot cancel order with status: '.$salesOrder->status);
             }
 
             // Release reserved stock if order was confirmed or processing

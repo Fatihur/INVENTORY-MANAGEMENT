@@ -1272,28 +1272,80 @@
             const group = document.getElementById(groupId);
             const section = document.querySelector(`[onclick="toggleNavGroup('${groupId}')"]`);
 
-            if (group && section) {
-                group.classList.toggle('collapsed');
-                section.classList.toggle('collapsed');
+            if (!group || !section) return;
 
-                // Save collapse state to localStorage
-                const isCollapsed = group.classList.contains('collapsed');
-                localStorage.setItem(`nav_${groupId}_collapsed`, isCollapsed);
+            // Toggle current group
+            const willBeCollapsed = !group.classList.contains('collapsed');
+
+            if (willBeCollapsed) {
+                // Collapse this group
+                group.classList.add('collapsed');
+                section.classList.add('collapsed');
+            } else {
+                // Expand this group and collapse others (accordion behavior)
+                group.classList.remove('collapsed');
+                section.classList.remove('collapsed');
+
+                // Collapse other groups
+                const allGroups = ['nav-main', 'nav-sales', 'nav-warehouse', 'nav-management'];
+                allGroups.forEach(otherGroupId => {
+                    if (otherGroupId !== groupId) {
+                        const otherGroup = document.getElementById(otherGroupId);
+                        const otherSection = document.querySelector(`[onclick="toggleNavGroup('${otherGroupId}')"]`);
+                        if (otherGroup && otherSection) {
+                            otherGroup.classList.add('collapsed');
+                            otherSection.classList.add('collapsed');
+                            localStorage.setItem(`nav_${otherGroupId}_collapsed`, 'true');
+                        }
+                    }
+                });
             }
+
+            // Save collapse state to localStorage
+            localStorage.setItem(`nav_${groupId}_collapsed`, willBeCollapsed);
         }
 
         // Restore collapse state on page load
         document.addEventListener('DOMContentLoaded', () => {
             const groups = ['nav-main', 'nav-sales', 'nav-warehouse', 'nav-management'];
+            let hasExpandedGroup = false;
+
+            // First pass: check if any group should be expanded
             groups.forEach(groupId => {
-                const isCollapsed = localStorage.getItem(`nav_${groupId}_collapsed`) === 'true';
+                const storedValue = localStorage.getItem(`nav_${groupId}_collapsed`);
+                if (storedValue === 'false') {
+                    hasExpandedGroup = true;
+                }
+            });
+
+            // Second pass: apply states
+            groups.forEach(groupId => {
+                const group = document.getElementById(groupId);
+                const section = document.querySelector(`[onclick="toggleNavGroup('${groupId}')"]`);
+
+                if (!group || !section) return;
+
+                const storedValue = localStorage.getItem(`nav_${groupId}_collapsed`);
+                let isCollapsed;
+
+                if (storedValue === null) {
+                    // No stored value: collapse all except the first group (nav-main)
+                    isCollapsed = groupId !== 'nav-main';
+                } else {
+                    isCollapsed = storedValue === 'true';
+                }
+
+                // If no group is explicitly expanded and this is the first group, expand it
+                if (!hasExpandedGroup && groupId === 'nav-main') {
+                    isCollapsed = false;
+                }
+
                 if (isCollapsed) {
-                    const group = document.getElementById(groupId);
-                    const section = document.querySelector(`[onclick="toggleNavGroup('${groupId}')"]`);
-                    if (group && section) {
-                        group.classList.add('collapsed');
-                        section.classList.add('collapsed');
-                    }
+                    group.classList.add('collapsed');
+                    section.classList.add('collapsed');
+                } else {
+                    group.classList.remove('collapsed');
+                    section.classList.remove('collapsed');
                 }
             });
         });
@@ -1303,6 +1355,28 @@
             link.addEventListener('click', () => {
                 if (window.innerWidth <= 768) {
                     toggleSidebar();
+                }
+            });
+        });
+
+        // Handle Livewire page navigation to restore sidebar state
+        document.addEventListener('livewire:navigated', () => {
+            const groups = ['nav-main', 'nav-sales', 'nav-warehouse', 'nav-management'];
+            groups.forEach(groupId => {
+                const group = document.getElementById(groupId);
+                const section = document.querySelector(`[onclick="toggleNavGroup('${groupId}')"]`);
+
+                if (!group || !section) return;
+
+                const storedValue = localStorage.getItem(`nav_${groupId}_collapsed`);
+                const isCollapsed = storedValue === 'true';
+
+                if (isCollapsed) {
+                    group.classList.add('collapsed');
+                    section.classList.add('collapsed');
+                } else {
+                    group.classList.remove('collapsed');
+                    section.classList.remove('collapsed');
                 }
             });
         });
