@@ -114,9 +114,8 @@ class StockOpname extends Model
 
         // Use a transaction with lock to prevent duplicate numbers
         return \DB::transaction(function () use ($prefixWithYear) {
-            // Get the latest opname number for this year (including soft deleted)
-            $latest = static::withTrashed()
-                ->where('opname_number', 'like', "{$prefixWithYear}%")
+            // Get the latest opname number for this year
+            $latest = static::where('opname_number', 'like', "{$prefixWithYear}%")
                 ->orderBy('opname_number', 'desc')
                 ->lockForUpdate()
                 ->first();
@@ -135,7 +134,7 @@ class StockOpname extends Model
 
             do {
                 $opnameNumber = $prefixWithYear.str_pad($newNumber, 6, '0', STR_PAD_LEFT);
-                $exists = static::withTrashed()->where('opname_number', $opnameNumber)->exists();
+                $exists = static::where('opname_number', $opnameNumber)->exists();
 
                 if (! $exists) {
                     return $opnameNumber;

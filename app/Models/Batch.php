@@ -95,9 +95,8 @@ class Batch extends Model
 
         // Use a transaction with lock to prevent duplicate numbers
         return \DB::transaction(function () use ($prefix) {
-            // Get the latest batch number (including soft deleted)
-            $latest = static::withTrashed()
-                ->where('batch_number', 'like', "{$prefix}%")
+            // Get the latest batch number
+            $latest = static::where('batch_number', 'like', "{$prefix}%")
                 ->orderBy('batch_number', 'desc')
                 ->lockForUpdate()
                 ->first();
@@ -116,7 +115,7 @@ class Batch extends Model
 
             do {
                 $batchNumber = $prefix.str_pad($newNumber, 6, '0', STR_PAD_LEFT);
-                $exists = static::withTrashed()->where('batch_number', $batchNumber)->exists();
+                $exists = static::where('batch_number', $batchNumber)->exists();
 
                 if (! $exists) {
                     return $batchNumber;
